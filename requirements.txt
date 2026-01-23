@@ -1,0 +1,29 @@
+# Data Generation
+faker>=25.0.0
+numpy>=1.26.0
+pandas>=2.2.0
+
+# Local LLM / Embeddings
+ollama>=0.3.0
+
+# Qdrant
+qdrant-client>=1.9.0
+
+# LLM
+openai>=1.30.0
+
+# Sparse Embeddings
+fastembed>=0.3.0
+
+# Agentic Framework
+langgraph>=0.2.0
+langchain>=0.3.0
+langchain-openai>=0.2.0
+pydantic>=2.0.0
+
+# Utilities
+tqdm>=4.66.0
+python-dotenv>=1.0.0
+
+# Web Interface
+streamlit>=1.30.0
