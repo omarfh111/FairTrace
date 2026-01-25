@@ -55,20 +55,43 @@ frontend/coverage/
 *.log
 logs/
 
-# Qdrant/Data
+
 data_generation/output/
 evaluation/reports/
 db_data/
 
-# Testing
 .pytest_cache/
 .coverage
 htmlcov/
 
-# Mypy
+
 .mypy_cache/
 .dmypy.json
 dmypy.json
 
-# Ruff
+
 .ruff_cache/
+
+
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
