@@ -543,6 +543,141 @@ def search_excluding_outcome(
 
 
 # =============================================================================
+# REGULATION SEARCH (uses 'content' vector instead of 'structured'/'narrative')
+# =============================================================================
+@traceable(name="qdrant_search_regulations", run_type="retriever")
+def search_regulations(
+    query_text: str,
+    limit: int = 10,
+    filters: dict | None = None,
+    article_ref: str | None = None,
+    page_number: int | None = None,
+    dense_vector: list[float] | None = None,
+    sparse_indices: list[int] | None = None,
+    sparse_values: list[float] | None = None,
+) -> dict:
+    """
+    Hybrid search for banking regulations (regulations_v2 collection).
+    
+    Uses RRF fusion of 'content' (dense) and 'keywords' (sparse) vectors.
+    
+    Args:
+        query_text: Search query
+        limit: Number of results
+        filters: Additional metadata filters
+        article_ref: Filter by specific article reference (e.g., "Article 52")
+        page_number: Filter by specific page number
+        dense_vector: Pre-computed dense embedding (optional)
+        sparse_indices: Pre-computed sparse indices (optional)
+        sparse_values: Pre-computed sparse values (optional)
+        
+    Returns:
+        Dict with results, count, latency, and metadata
+    """
+    start = time.time()
+    collection = "regulations_v2"
+    
+    client = get_qdrant_client()
+    
+    # Build filters
+    all_filters = filters.copy() if filters else {}
+    if article_ref:
+        all_filters["article_ref"] = article_ref
+    if page_number:
+        all_filters["page_number"] = page_number
+    
+    query_filter = _build_filter(all_filters) if all_filters else None
+    
+    # Generate embeddings if not provided
+    embed_start = time.time()
+    if dense_vector is None or sparse_indices is None or sparse_values is None:
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            futures = {}
+            if dense_vector is None:
+                futures["dense"] = executor.submit(embed_dense, query_text)
+            if sparse_indices is None or sparse_values is None:
+                futures["sparse"] = executor.submit(embed_sparse, query_text)
+            
+            if "dense" in futures:
+                dense_vector = futures["dense"].result()
+            if "sparse" in futures:
+                sparse_indices, sparse_values = futures["sparse"].result()
+    
+    embed_latency = (time.time() - embed_start) * 1000
+    
+    # Build prefetch queries for regulation vectors
+    prefetch = [
+        models.Prefetch(
+            query=dense_vector,
+            using="content",  # Regulations use 'content' not 'structured'
+            limit=limit * 2
+        ),
+        models.Prefetch(
+            query=models.SparseVector(indices=sparse_indices, values=sparse_values),
+            using="keywords",
+            limit=limit * 2
+        )
+    ]
+    
+    # Perform fusion search
+    search_start = time.time()
+    results = client.query_points(
+        collection_name=collection,
+        prefetch=prefetch,
+        query=models.FusionQuery(fusion=models.Fusion.RRF),
+        query_filter=query_filter,
+        limit=limit,
+        with_payload=True
+    )
+    search_latency = (time.time() - search_start) * 1000
+    
+    total_latency = (time.time() - start) * 1000
+    formatted = [{"id": r.id, "score": r.score, "payload": r.payload} for r in results.points]
+    
+    return {
+        "results": formatted,
+        "count": len(formatted),
+        "latency_ms": round(total_latency, 2),
+        "embed_latency_ms": round(embed_latency, 2),
+        "search_latency_ms": round(search_latency, 2),
+        "collection": collection,
+        "vector_type": "hybrid",
+        "filters_applied": all_filters if all_filters else None
+    }
+
+
+def format_regulation_result(result: dict) -> str:
+    """Format a regulation search result for LLM consumption."""
+    payload = result["payload"]
+    score = result["score"]
+    
+    article = payload.get("article_ref", "")
+    section = payload.get("section_title", "")
+    page = payload.get("page_number", "?")
+    content = payload.get("content", "")[:500]
+    
+    header = f"[Page {page}]"
+    if article:
+        header += f" {article}"
+    if section:
+        header += f" - {section}"
+    
+    return f"{header} (Score: {score:.2f})\n{content}"
+
+
+def format_regulation_results(results: list[dict]) -> str:
+    """Format multiple regulation search results for LLM consumption."""
+    if not results:
+        return "No relevant regulations found."
+    
+    formatted = []
+    for i, result in enumerate(results, 1):
+        formatted.append(f"{i}. {format_regulation_result(result)}")
+    
+    return "\n\n".join(formatted)
+
+
+# =============================================================================
 # HELPER FUNCTIONS
 # =============================================================================
 def _build_filter(filters: dict) -> models.Filter:

@@ -29,7 +29,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 load_dotenv()
 
 from api.schemas import HealthResponse
-from api.routes import decisions_router
+from api.routes import decisions_router, chat_router
 
 # App metadata
 APP_TITLE = "FairTrace API"
@@ -135,6 +135,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(decisions_router, prefix="/api/v1")
+app.include_router(chat_router, prefix="/api/v1")
 
 
 @app.get("/", include_in_schema=False)

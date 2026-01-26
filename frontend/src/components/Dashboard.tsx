@@ -9,6 +9,7 @@ import { HistorySidebar } from "@/components/HistorySidebar";
 import { EvidenceGraph } from "@/components/EvidenceGraph";
 import { GradientButton } from "@/components/ui/GradientButton";
 import { OnDemandAgentPanel } from "@/components/OnDemandAgentPanel";
+import { RegulationChatbot } from "@/components/RegulationChatbot";
 import { Application, DecisionResult, AgentVerdict } from "@/types/application";
 import { submitDecision, ApiDecisionResponse, checkHealth } from "@/lib/api";
 import { ArrowLeft, Zap, Wifi, WifiOff } from "lucide-react";
@@ -283,6 +284,9 @@ export const Dashboard = () => {
           </div>
         </div>
       </main>
+
+      {/* Regulation Chatbot - Hidden during loading */}
+      {view !== 'loading' && <RegulationChatbot />}
     </div>
   );
 };

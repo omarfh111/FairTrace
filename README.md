@@ -11,6 +11,34 @@
 
 ---
 
+## ⚡ TL;DR
+
+FairTrace is a production-grade AI credit decision system that:
+- Uses **parallel multi-agent reasoning** instead of single-LLM prompts
+- Combines **hybrid vector search (dense + sparse + RRF)** for evidence retrieval
+- Produces **auditable, explainable decisions** with full observability
+- Is designed for **real banking constraints** (fairness, regulation, traceability)
+
+---
+
+## ❗ Problem This Solves
+
+Traditional credit decision systems suffer from:
+- **Black-box ML** with poor explainability
+- **Inconsistent decisions** for similar applicants
+- **No audit trail** for regulators
+- **Single-model failure modes**
+
+FairTrace addresses these by using multiple debating agents, grounding decisions in historical cases, and storing every reasoning step.
+
+---
+
+## 🧪 Data Disclaimer
+
+> This project uses **synthetic but realistic financial data** generated via LLMs. No real customer or banking data is used. The architecture and evaluation framework are **production-ready and data-agnostic**.
+
+---
+
 ## 🎯 Overview
 
 FairTrace is a **multi-agent AI system** that evaluates credit applications (consumer loans, startup funding, enterprise credit) using a debate-based architecture. Multiple specialized agents analyze each application from different perspectives, then an orchestrator synthesizes their verdicts into a final, explainable decision.
@@ -22,8 +50,9 @@ FairTrace is a **multi-agent AI system** that evaluates credit applications (con
 | **Multi-Agent Debate** | Risk, Fairness, and Trajectory agents debate each application |
 | **Parallel Execution** | Agents run concurrently using async LangGraph (~10s total) |
 | **Hybrid Vector Search** | Dense + sparse embeddings with Qdrant for case retrieval |
-| **Persistent Storage** | Supabase PostgreSQL for decisions and agent cache |
+| **Persistent Storage** | Supabase PostgreSQL for decisions, agent cache, and audit logging |
 | **On-Demand Agents** | Advisor, Narrative, Comparator, Scenario agents for deeper insights |
+| **Regulation Agent** | RAG-powered chatbot for banking regulation Q&A (BCT circulars) |
 | **Full Observability** | LangSmith tracing for every LLM call and retrieval |
 | **Modern React UI** | Real-time dashboard with evidence visualization |
 
@@ -103,7 +132,8 @@ FairTrace is a **multi-agent AI system** that evaluates credit applications (con
 
 ---
 
-### 🔄 RAG Pipeline Architecture
+<details>
+<summary>🔄 RAG Pipeline Architecture (click to expand)</summary>
 
 Each agent uses a sophisticated Retrieval-Augmented Generation (RAG) pipeline:
 
@@ -234,6 +264,7 @@ Each agent uses a sophisticated Retrieval-Augmented Generation (RAG) pipeline:
 │  └─────────────────────────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────────────────────┘
 ```
+</details>
 
 ---
 
@@ -256,6 +287,12 @@ Each agent uses a sophisticated Retrieval-Augmented Generation (RAG) pipeline:
 | **Comparator Agent** | User clicks "Gap Analysis" | Search for top approved cases in same category | Metric-by-metric comparison with benchmarks |
 | **Scenario Agent** | User defines what-if scenarios | Re-evaluate with modified application data | Probability changes, optimal path to approval |
 
+#### Regulation Agent (Standalone)
+
+| Agent | Trigger | Data Source | Output |
+|-------|---------|-------------|--------|
+| **Regulation Agent** | Chatbot in dashboard | BCT banking circulars (8,029 chunks) | Citation-aware answers with article references |
+
 
 ---
 
@@ -273,8 +310,8 @@ Each agent uses a sophisticated Retrieval-Augmented Generation (RAG) pipeline:
 ### 1. Clone and Setup
 
 ```bash
-git clone https://github.com/yourusername/fairtrace.git
-cd fairtrace
+git clone https://github.com/omarfh111/FairTrace.git
+cd FairTrace
 
 # Create Python virtual environment
 python -m venv .venv
@@ -344,6 +381,14 @@ CREATE TABLE agent_cache (
     UNIQUE(decision_id, agent_type, cache_key)
 );
 ```
+
+### Supabase Utility
+
+Supabase provides:
+- **Decision Persistence**: Every credit decision is stored with full agent verdicts for audit trails
+- **Agent Cache**: On-demand agents (Advisor, Narrative, etc.) cache their responses to avoid redundant LLM calls
+- **Query History**: All chat conversations with the Regulation Agent are persisted
+- **Row-Level Security**: Production deployments can enable RLS for multi-tenant isolation
 
 ### 4. Generate Synthetic Data
 
@@ -506,6 +551,28 @@ Every decision includes full tracing in LangSmith:
 
 ![LangSmith Trace](docs/images/langsmith-trace.png)
 
+### Agent Execution Traces
+
+Our multi-agent system provides detailed execution traces for each agent:
+
+| Advisor Agent | Credit Decision Flow |
+|:-------------:|:--------------------:|
+| ![Advisor Agent Trace](docs/images/trace_advisor_agent.png) | ![Credit Decision Trace](docs/images/trace_credit_decision.png) |
+
+| Risk Agent | Trajectory Agent |
+|:----------:|:----------------:|
+| ![Risk Agent Trace](docs/images/trace_risk_agent.png) | ![Trajectory Agent Trace](docs/images/trace_trajectory_agent.png) |
+
+### Qdrant Vector Collections
+
+![Qdrant Collections](docs/images/qdrant_collections.png)
+
+The system maintains 4 vector collections:
+- `clients_v2` - 5,000 consumer credit cases
+- `enterprises_v2` - 1,000 enterprise credit cases  
+- `regulations_v2` - 8,029 banking regulation chunks (BCT)
+- `startups_v2` - 2,500 startup funding cases
+
 ### Metrics Tracked
 
 | Metric | Description |
@@ -553,7 +620,7 @@ ruff check .
 ### Adding a New Agent
 
 1. Create `agents/your_agent.py` extending pattern from `base_agent.py`
-2. Add hybrid search tool in `tools/qdrant_retriever.py`
+2. Add hybrid search tool or other tools in `tools/`
 3. Register endpoint in `api/routes/decisions.py`
 4. Add response schema in `api/schemas.py`
 5. Update frontend in `frontend/src/components/`
@@ -596,6 +663,13 @@ python evaluation/run_evaluation.py --limit 50 --parse
 
 ```
 
+### Key Takeaways
+
+- Hybrid retrieval improved MRR by **~60%** over baseline
+- Query understanding reduced false positives significantly
+- Cross-encoder reranking was **removed** due to 80x latency increase with degraded accuracy
+- Final system favors **consistency and explainability** over raw speed
+
 ---
 
 ## �📄 License
@@ -617,3 +691,34 @@ MIT License - see [LICENSE](LICENSE) for details.
 <div align="center">
   <b>Built with ❤️ for explainable AI credit decisions</b>
 </div>
+
+---
+
+## 🎓 What This Project Demonstrates
+
+- Designing **agentic AI systems** beyond simple chains
+- Applying **RAG to structured + unstructured data**
+- **Observability-first** AI development
+- **Evaluation-driven** architecture decisions
+- Production constraints (latency, auditability, fairness)
+
+---
+
+## ⚖️ Design Tradeoffs
+
+| Decision | Rationale |
+|----------|----------|
+| **Multi-agent vs single prompt** | Improves robustness through disagreement; makes bias explicit; ~10s latency but much better explainability |
+| **No cross-encoder reranker** | Increased latency 80x and degraded MRR; LLM query understanding + hybrid retrieval performed better |
+| **Hybrid search** | Dense misses acronyms/numbers; sparse lacks semantics; RRF combines both strengths |
+| **Supabase over local DB** | Free tier, managed PostgreSQL, built-in auth for future multi-tenancy |
+
+---
+
+## 🛣️ Roadmap
+
+- [ ] Docker + Kubernetes deployment
+- [ ] Human-in-the-loop decision overrides
+- [ ] Online learning from decision outcomes
+- [ ] Stress testing for fairness metrics
+- [ ] Cross-encoder reranking via microservice (low-latency)

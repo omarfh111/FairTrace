@@ -449,3 +449,51 @@ class ScenarioRequest(BaseModel):
             }]]
         }
     )
+
+
+# =============================================================================
+# REGULATION CHAT SCHEMAS
+# =============================================================================
+
+class ChatCitation(BaseModel):
+    """A citation from the regulation documents."""
+    article: Optional[str] = Field(None, description="Article reference (e.g., 'Article 5')")
+    page: int = Field(..., description="Page number in the PDF")
+    excerpt: str = Field(..., description="Relevant text excerpt")
+
+
+class ChatMessage(BaseModel):
+    """A single chat message."""
+    role: Literal["user", "assistant"] = Field(..., description="Message sender role")
+    content: str = Field(..., description="Message content")
+    citations: list[ChatCitation] = Field(default_factory=list, description="Source citations")
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+
+class ChatRequest(BaseModel):
+    """Request to chat with the regulation agent."""
+    message: str = Field(..., min_length=1, max_length=2000, description="User's question")
+    conversation_id: Optional[str] = Field(None, description="Optional conversation ID for context")
+    
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "message": "Qu'est-ce que l'Article 5 de la réglementation bancaire?",
+                    "conversation_id": None
+                }
+            ]
+        }
+    }
+
+
+class ChatResponse(BaseModel):
+    """Response from the regulation chat agent."""
+    answer: str = Field(..., description="Agent's response")
+    citations: list[ChatCitation] = Field(default_factory=list, description="Source citations")
+    confidence: Literal["LOW", "MEDIUM", "HIGH"] = Field("MEDIUM", description="Response confidence")
+    source_pages: list[int] = Field(default_factory=list, description="Referenced pages")
+    follow_up_questions: list[str] = Field(default_factory=list, description="Suggested follow-up questions")
+    conversation_id: str = Field(..., description="Conversation ID for continuity")
+    processing_time_ms: float = Field(0, description="Processing time in milliseconds")
+
