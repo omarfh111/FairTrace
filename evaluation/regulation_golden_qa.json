@@ -1,0 +1,464 @@
+[
+  {
+    "question": "Quelles sont les étapes que les établissements doivent suivre pour accéder aux données tirées du fichier selon l'article 39 ?",
+    "answer": "Les établissements doivent consulter les circulaires adressées par la banque centrale, qui précisent les données accessibles et les conditions techniques à respecter. Ces données ne peuvent être utilisées que pour l'étude des demandes de crédit, des facilités de paiement ou l'évaluation des risques. Il est aussi crucial de noter qu'il est interdit de communiquer ces données à des tiers, sous peine de sanctions prévues par le code pénal [Page 13, Article 39].",
+    "citations": [
+      {
+        "page": 13,
+        "article": "Article 39",
+        "excerpt": "La banque centrale fixe par voie de circulaires... les conditions techniques qu’ils doivent respecter."
+      }
+    ],
+    "query_type": "procedural",
+    "difficulty": "medium",
+    "reasoning": "Cette paire est utile pour l'évaluation car elle teste la compréhension des étapes et des conditions nécessaires pour le traitement des données selon la réglementation bancaire.",
+    "source_chunk_id": "REG-P0013-000080-bec7bd06",
+    "source_page": 13,
+    "source_article": "Article 39"
+  },
+  {
+    "question": "Qu'est-ce que la commission tunisienne des analyses financières selon le décret n°2016-1098 ?",
+    "answer": "La commission tunisienne des analyses financières est un organe chargé de la lutte contre le blanchiment d’argent et le financement du terrorisme, dont l'organisation et le fonctionnement sont fixés par le décret n°2016-1098 du 15 août 2016. [Page 5, Décret n°2016-1098]",
+    "citations": [
+      {
+        "page": 5,
+        "article": "Décret n°2016-1098",
+        "excerpt": "fixant l’organisation et les modalités de fonctionnement de la commission tunisienne des analyses financières"
+      }
+    ],
+    "query_type": "definition",
+    "difficulty": "medium",
+    "reasoning": "Cette paire est utile pour l'évaluation car elle teste la compréhension d'un terme technique clé dans le contexte de la réglementation bancaire tunisienne.",
+    "source_chunk_id": "REG-P0005-000023-bf38c8c1",
+    "source_page": 5,
+    "source_article": "Décret n°2016-1098"
+  },
+  {
+    "question": "Comment l'article 19 se relie-t-il aux opérations visées à l'article 10 ?",
+    "answer": "L'article 19 stipule que la banque centrale peut octroyer une assistance financière sous forme d'opérations visées à l'article 10, ce qui montre un lien direct entre ces deux articles concernant les mesures que la banque centrale peut prendre pour préserver la stabilité du système financier. [Page 11, Article 19]",
+    "citations": [
+      {
+        "page": 11,
+        "article": "Article 19",
+        "excerpt": "la banque centrale peut octroyer une assistance financière sous la forme des opérations visées à l’article 10"
+      }
+    ],
+    "query_type": "cross_reference",
+    "difficulty": "medium",
+    "reasoning": "Cette paire est utile car elle évalue la compréhension des relations entre différents articles de la réglementation bancaire, ce qui est essentiel pour une bonne interprétation des lois.",
+    "source_chunk_id": "REG-P0011-000056-a306d8c8",
+    "source_page": 11,
+    "source_article": "Article 19"
+  },
+  {
+    "question": "Qu'est-ce que la Banque centrale selon le contexte du remboursement des pièces de monnaie ?",
+    "answer": "La Banque centrale est l'institution qui a le pouvoir d'évaluer et de décider du remboursement total ou partiel des pièces de monnaie, notamment dans des cas d'identification impossible ou d'altérations, comme mentionné dans l'article 15. Elle doit être satisfaite de la preuve des mutilations ou altérations pour accorder ce remboursement [Page 10, Article 15].",
+    "citations": [
+      {
+        "page": 10,
+        "article": "Article 15",
+        "excerpt": "le remboursement total ou partiel relève de l'appréciation de la Banque centrale."
+      }
+    ],
+    "query_type": "definition",
+    "difficulty": "medium",
+    "reasoning": "Cette paire est utile pour évaluer la compréhension des rôles et responsabilités de la Banque centrale dans le cadre de la réglementation bancaire.",
+    "source_chunk_id": "REG-P0010-000046-181f6413",
+    "source_page": 10,
+    "source_article": "Article 15"
+  },
+  {
+    "question": "Comment la Banque centrale gère-t-elle les moyens de paiement et les crédits pour l'exécution des accords de coopération internationale?",
+    "answer": "La Banque centrale fournit et reçoit les moyens de paiement et les crédits requis pour l'exécution des accords de coopération internationale. De plus, l'État assume les pertes subies par la Banque centrale dues à cette exécution. [Page 15, Article 43]",
+    "citations": [
+      {
+        "page": 15,
+        "article": "Article 43",
+        "excerpt": "La banque centrale fournit et reçoit les moyens de paiement et les crédits requis pour l’exécution de ces accords."
+      }
+    ],
+    "query_type": "procedural",
+    "difficulty": "medium",
+    "reasoning": "Cette paire est utile pour évaluer la compréhension des procédures de financement par la Banque centrale dans le cadre des accords de coopération internationale.",
+    "source_chunk_id": "REG-P0015-000094-55c976b0",
+    "source_page": 15,
+    "source_article": "Article 43"
+  },
+  {
+    "question": "Quelles sont les conditions d'adhésion au fonds de garantie des dépôts bancaires selon le décret n°2017-268 ?",
+    "answer": "Les conditions d'adhésion au fonds de garantie des dépôts bancaires sont spécifiées dans le décret n°2017-268, qui fixe les règles d’intervention et d’organisation de fonctionnement de ce fonds. [Page 3, Décret n°2017-268]",
+    "citations": [
+      {
+        "page": 3,
+        "article": "Décret n°2017-268",
+        "excerpt": "fixation des règles d’intervention, d’organisation de fonctionnement du fonds de garantie..."
+      }
+    ],
+    "query_type": "single_lookup",
+    "difficulty": "medium",
+    "reasoning": "Cette paire est utile pour évaluer la compréhension des conditions d'adhésion au fonds de garantie, ce qui est essentiel pour les établissements bancaires et les déposants.",
+    "source_chunk_id": "REG-P0003-000006-65714f7b",
+    "source_page": 3,
+    "source_article": "Décret n°2017-268"
+  },
+  {
+    "question": "Quels sont les objectifs du décret n°2006-1879 relatif à l'observatoire des services bancaires ?",
+    "answer": "Le décret n°2006-1879 fixe les règles d’organisation et de fonctionnement de l’observatoire des services bancaires, qui a pour objectif d'assurer une meilleure régulation et supervision des services bancaires en Tunisie. [Page 2, Décret n°2006-1879]",
+    "citations": [
+      {
+        "page": 2,
+        "article": "Décret n°2006-1879",
+        "excerpt": "fixant la composition et les règles d’organisation et de fonctionnement de l’observatoire des services bancaires"
+      }
+    ],
+    "query_type": "single_lookup",
+    "difficulty": "medium",
+    "reasoning": "Cette paire évalue la compréhension des objectifs d'un décret spécifique, ce qui est crucial pour l'analyse réglementaire.",
+    "source_chunk_id": "REG-P0002-000001-628c94e1",
+    "source_page": 2,
+    "source_article": "Décret n°2006-1879"
+  },
+  {
+    "question": "Quel est le rôle de la Banque centrale dans ses relations avec les institutions selon l'article 27 ?",
+    "answer": "Selon l'article 27, la Banque centrale assiste le gouvernement dans ses relations avec les institutions. [Page 12, Article 27]",
+    "citations": [
+      {
+        "page": 12,
+        "article": "Article 27",
+        "excerpt": "La banque centrale assiste le gouvernement dans ses relations avec les institutions"
+      }
+    ],
+    "query_type": "single_lookup",
+    "difficulty": "easy",
+    "reasoning": "Cette paire permet d'évaluer la compréhension du rôle de la Banque centrale dans le cadre de ses opérations et de ses interactions avec le gouvernement.",
+    "source_chunk_id": "REG-P0012-000065-2780ef75",
+    "source_page": 12,
+    "source_article": "Article 27"
+  },
+  {
+    "question": "Quelle est la procédure que la Banque centrale doit suivre pour fournir des fonds à la demande du ministre chargé des finances ?",
+    "answer": "La Banque centrale peut fournir des fonds à la demande du ministre chargé des finances selon l'article 26. Cette procédure implique que la demande soit formulée par le ministre afin que la Banque centrale puisse agir en conséquence [Page 12, Article 26].",
+    "citations": [
+      {
+        "page": 12,
+        "article": "Article 26",
+        "excerpt": "La banque centrale peut, à la demande du ministre chargé des finances, fournir des..."
+      }
+    ],
+    "query_type": "procedural",
+    "difficulty": "medium",
+    "reasoning": "Cette paire est utile pour l'évaluation car elle permet de tester la compréhension des procédures formelles au sein de la réglementation bancaire.",
+    "source_chunk_id": "REG-P0012-000064-3d5ecbb5",
+    "source_page": 12,
+    "source_article": "Article 26"
+  },
+  {
+    "question": "Comment les réserves obligatoires mentionnées à l'article 11 sont-elles liées à d'autres dispositions de la réglementation bancaire tunisienne ?",
+    "answer": "Les réserves obligatoires sont essentielles dans la gestion de la politique monétaire de la Banque centrale, et leurs modalités de constitution peuvent faire référence à d'autres articles concernant les opérations bancaires et la gestion des liquidités des banques. Par exemple, l'article 27 définit le cadre des relations entre la Banque centrale et les institutions financières, ce qui peut inclure des directives sur la gestion des réserves. [Page 9, Article 11]",
+    "citations": [
+      {
+        "page": 9,
+        "article": "Article 11",
+        "excerpt": "La banque centrale peut : contraindre les banques, par voie de circulaires, de constituer, dans des comptes ouverts sur ses livres, un montant minimum de réserves obligatoires sous forme de dépôts."
+      }
+    ],
+    "query_type": "cross_reference",
+    "difficulty": "medium",
+    "reasoning": "Cette paire est utile pour l'évaluation car elle examine les liens entre différents articles, ce qui est crucial pour comprendre l'interconnexion des régulations bancaires.",
+    "source_chunk_id": "REG-P0009-000042-3d071074",
+    "source_page": 9,
+    "source_article": "Article 11"
+  },
+  {
+    "question": "Quel est l'objectif principal de la Banque centrale selon l'article 7 ?",
+    "answer": "L'objectif principal de la Banque centrale consiste à maintenir la stabilité des prix. Elle contribue également au maintien de la stabilité financière pour soutenir la réalisation des objectifs de la politique économique de l'État, y compris dans les domaines de développement. [Page 9, Article 7]",
+    "citations": [
+      {
+        "page": 9,
+        "article": "Article 7",
+        "excerpt": "L’objectif principal de la banque centrale consiste à maintenir la stabilité des prix."
+      }
+    ],
+    "query_type": "single_lookup",
+    "difficulty": "easy",
+    "reasoning": "Cette paire évalue la compréhension des objectifs fondamentaux de la Banque centrale, ce qui est essentiel pour saisir son rôle dans l'économie tunisienne.",
+    "source_chunk_id": "REG-P0009-000034-de29b998",
+    "source_page": 9,
+    "source_article": "Article 7"
+  },
+  {
+    "question": "Comment le secret professionnel des informations bancaires est-il traité différemment selon les lois nationales et étrangères ?",
+    "answer": "Selon les lois applicables à l'étranger, les informations doivent être couvertes par le secret professionnel, mais elles doivent également être nécessaires à l'exercice des missions des autorités étrangères. En revanche, dans le cadre des lois nationales, les exigences peuvent différer, notamment en ce qui concerne la communication de ces informations. [Page 15, Article 43]",
+    "citations": [
+      {
+        "page": 15,
+        "article": "Article 43",
+        "excerpt": "les informations soient, selon les lois applicables à l’étranger, couvertes par le secret professionnel..."
+      }
+    ],
+    "query_type": "comparative",
+    "difficulty": "medium",
+    "reasoning": "Cette paire est utile pour évaluer la compréhension des différences entre les traitements des informations bancaires au niveau national et international, ce qui est crucial pour la conformité réglementaire.",
+    "source_chunk_id": "REG-P0015-000092-60d5e848",
+    "source_page": 15,
+    "source_article": "Article 43"
+  },
+  {
+    "question": "Qu'est-ce qu'un emprunt obligataire dans le contexte de la réglementation bancaire tunisienne ?",
+    "answer": "Un emprunt obligataire est un instrument financier par lequel une entité émet des titres de créance pour lever des fonds, généralement destiné à financer des projets ou des besoins de trésorerie. Selon le texte, il est mentionné que l'émission d'un emprunt obligataire se fait par décision appropriée, indiquant ainsi son importance dans le cadre des opérations financières. [Page 12, Article 30]",
+    "citations": [
+      {
+        "page": 12,
+        "article": "Article 30",
+        "excerpt": "pour signer tous documents et contrats relatifs à l’émission des emprunts obligataires..."
+      }
+    ],
+    "query_type": "definition",
+    "difficulty": "medium",
+    "reasoning": "Cette paire est utile pour l'évaluation car elle permet de tester la compréhension d'un terme technique important dans le domaine bancaire, en lien avec les opérations de financement et la réglementation en vigueur.",
+    "source_chunk_id": "REG-P0012-000071-87fdd2fb",
+    "source_page": 12,
+    "source_article": "Article 30"
+  },
+  {
+    "question": "Quelles sont les exigences minimales de la convention de gestion de compte de dépôt selon la circulaire n°86-42 ?",
+    "answer": "Les exigences minimales de la convention de gestion de compte de dépôt sont définies dans la circulaire aux banques n°86-42 du 1er décembre 1986, qui stipule les conditions que doivent respecter les banques en matière de gestion des comptes de dépôt. [Page 3, Circulaire aux banques n°86-42]",
+    "citations": [
+      {
+        "page": 3,
+        "article": "Circulaire aux banques n°86-42",
+        "excerpt": "particulières minimales de la convention de gestion de compte de dépôt"
+      }
+    ],
+    "query_type": "single_lookup",
+    "difficulty": "medium",
+    "reasoning": "Cette paire est utile car elle évalue la compréhension des exigences réglementaires spécifiques en matière de gestion de compte de dépôt, ce qui est essentiel pour les professionnels du secteur bancaire.",
+    "source_chunk_id": "REG-P0003-000009-1bce5b53",
+    "source_page": 3,
+    "source_article": "Circulaire aux banques n°86-42"
+  },
+  {
+    "question": "Qu'est-ce que le rôle de caissier de la Banque centrale selon l'article 25 ?",
+    "answer": "Le rôle de caissier de la Banque centrale comprend d'agir comme l'agent financier de l'État pour toutes ses opérations, notamment de caisse et de banque, ainsi que la tenue du compte courant du trésor et l'exécution des opérations ordonnées au débit ou au crédit de ce compte [Page 11, Article 25].",
+    "citations": [
+      {
+        "page": 11,
+        "article": "Article 25",
+        "excerpt": "La banque centrale est l'agent financier de l'Etat pour toutes ses opérations, notamment de caisse et de banque."
+      }
+    ],
+    "query_type": "definition",
+    "difficulty": "medium",
+    "reasoning": "Cette paire est utile pour évaluer la compréhension des rôles et responsabilités de la Banque centrale, ce qui est essentiel pour naviguer dans la réglementation bancaire.",
+    "source_chunk_id": "REG-P0011-000062-e2c92b9d",
+    "source_page": 11,
+    "source_article": "Article 25"
+  },
+  {
+    "question": "Quelles sont les conséquences pour une personne assujettie qui ne déclare pas complètement l'encours selon l'article 41 ?",
+    "answer": "Selon l'article 41, toute personne assujettie à la déclaration qui ne déclare pas l'encours en totalité ou en partie est punie d'une amende de 5% du montant de l'encours non déclaré. [Page 14, Article 41]",
+    "citations": [
+      {
+        "page": 14,
+        "article": "Article 41",
+        "excerpt": "Est puni d’une amende de 5% du montant de l’encours non déclaré en totalité ou en partie..."
+      }
+    ],
+    "query_type": "single_lookup",
+    "difficulty": "medium",
+    "reasoning": "Cette paire est utile pour évaluer la compréhension des sanctions liées à la non-déclaration d'encours, ce qui est essentiel pour la conformité réglementaire.",
+    "source_chunk_id": "REG-P0014-000081-16234e0b",
+    "source_page": 14,
+    "source_article": "Article 40"
+  },
+  {
+    "question": "Comment le refinancement de créance par la banque centrale affecte-t-il les relations entre le bénéficiaire du refinancement et son débiteur, et quelles implications cela a-t-il pour les droits et obligations de chaque partie ?",
+    "answer": "Le refinancement de créance par la banque centrale entraîne automatiquement une subrogation dans les droits et obligations du bénéficiaire du refinancement à l'encontre de son débiteur. Cela signifie que la banque centrale acquiert les droits du bénéficiaire sur le débiteur, ce qui peut influencer les relations contractuelles entre ces parties. [Page 10, Article 12]",
+    "citations": [
+      {
+        "page": 10,
+        "article": "Article 12",
+        "excerpt": "Toute opération de refinancement de créance par la banque centrale entraîne de plein droit subrogation de celle-ci dans les droits et obligations qu'a le bénéficiaire du refinancement à l’encontre de son propre débiteur."
+      }
+    ],
+    "query_type": "multi_hop",
+    "difficulty": "medium",
+    "reasoning": "Cette paire évalue la capacité à comprendre et relier des concepts de subrogation et de refinancement dans le contexte des opérations bancaires, ce qui est essentiel pour une compréhension approfondie des implications réglementaires.",
+    "source_chunk_id": "REG-P0010-000043-ff222feb",
+    "source_page": 10,
+    "source_article": "Article 12"
+  },
+  {
+    "question": "Comment les accords de coopération internationale relatifs au domaine monétaire, mentionnés à l'article 43, interagissent-ils avec les conventions fixant les modalités entre le ministère des finances et la Banque centrale ?",
+    "answer": "Les accords de coopération internationale établis par l'Etat dans le domaine monétaire sont exécutés par des conventions spécifiques qui sont conclues entre le ministère chargé des finances et la Banque centrale. Ces conventions déterminent les modalités d'application de ces accords, assurant ainsi une intégration des engagements internationaux dans le cadre national. Cette structure permet une gestion cohérente des relations monétaires internationales et de leur impact sur la politique économique locale. [Page 15, Article 43]",
+    "citations": [
+      {
+        "page": 15,
+        "article": "Article 43",
+        "excerpt": "l’exécution des accords de coopération internationale conclus par l’Etat dans le domaine monétaire."
+      },
+      {
+        "page": 15,
+        "article": "Article 43",
+        "excerpt": "Des conventions conclues entre le ministère chargé des finances et la banque centrale fixent les modalités"
+      }
+    ],
+    "query_type": "multi_hop",
+    "difficulty": "hard",
+    "reasoning": "Cette paire est utile pour l'évaluation car elle nécessite une compréhension approfondie de la réglementation bancaire et de la manière dont les accords internationaux interagissent avec les normes nationales, testant ainsi la capacité à synthétiser des informations à partir de plusieurs articles.",
+    "source_chunk_id": "REG-P0015-000093-34222f0b",
+    "source_page": 15,
+    "source_article": "Article 43"
+  },
+  {
+    "question": "Quelles sont les obligations des banques concernant la communication des données relatives aux risques selon la Note aux banques n°89-16 ?",
+    "answer": "Les banques sont tenues de communiquer des données relatives aux risques et à leur situation mensuelle comptable conformément à la Note aux banques n°89-16 du 17 mai 1989 [Page 4, Article: Note aux banques n°89].",
+    "citations": [
+      {
+        "page": 4,
+        "article": "Note aux banques n°89",
+        "excerpt": "communication des données relatives aux risques et à la situation mensuelle comptable"
+      }
+    ],
+    "query_type": "single_lookup",
+    "difficulty": "easy",
+    "reasoning": "Cette paire est utile car elle évalue la compréhension des obligations réglementaires des banques concernant la gestion des risques, un aspect essentiel de la réglementation bancaire.",
+    "source_chunk_id": "REG-P0004-000018-15629b5d",
+    "source_page": 4,
+    "source_article": "Note aux banques n°89"
+  },
+  {
+    "question": "Quels sont les impacts des circulaires n°85-26 et n°99-03 sur la gestion des ressources du fonds national de garantie et le calcul des commissions de péréquation des changes ?",
+    "answer": "La circulaire n°85-26 du 2 juillet 1985 établit les directives relatives aux ressources du fonds national de garantie, tandis que la note aux banques n°99-03 du 26 janvier 1999 précise l'assiette de calcul des commissions de péréquation des changes, ce qui influence directement la gestion des dépôts bancaires. Ces deux documents sont essentiels pour assurer une bonne administration des ressources et des commissions associées, garantissant ainsi la stabilité financière et la protection des dépôts. [Page 3, Circulaire aux banques n°85-26]",
+    "citations": [
+      {
+        "page": 3,
+        "article": "Circulaire aux banques n°85-26",
+        "excerpt": "Circulaire portant sur les ressources du fonds national de garantie..."
+      },
+      {
+        "page": 3,
+        "article": "Note aux banques n°99-03",
+        "excerpt": "Note ayant pour objet l'assiette de calcul des commissions de péréquation des changes..."
+      }
+    ],
+    "query_type": "multi_hop",
+    "difficulty": "medium",
+    "reasoning": "Cette paire est utile car elle évalue la capacité à relier plusieurs documents réglementaires et à comprendre leur impact sur la gestion des dépôts et des ressources financières dans le contexte de la réglementation bancaire tunisienne.",
+    "source_chunk_id": "REG-P0003-000010-8108c9b8",
+    "source_page": 3,
+    "source_article": "Circulaire aux banques n°85-26"
+  },
+  {
+    "question": "Quelles sont les responsabilités du gouverneur de la Banque centrale et comment sont-elles liées à d'autres articles de la réglementation bancaire ?",
+    "answer": "Le gouverneur de la Banque centrale a plusieurs responsabilités, notamment la mise en œuvre de la politique monétaire définie par le conseil et la présidence des délibérations du conseil. Ses responsabilités sont en lien avec l'article 40, qui traite des actions de la banque centrale dans divers domaines, et l'article 49, qui stipule que le gouverneur peut déléguer certaines de ses fonctions. Cela montre que les fonctions de direction et de gouvernance sont interconnectées au sein de la réglementation bancaire tunisienne. [Page 15, Article 49]",
+    "citations": [
+      {
+        "page": 15,
+        "article": "Article 49",
+        "excerpt": "Le gouverneur peut déléguer certaines..."
+      },
+      {
+        "page": 15,
+        "article": "Article 40",
+        "excerpt": "La banque centrale permet aux..."
+      }
+    ],
+    "query_type": "cross_reference",
+    "difficulty": "medium",
+    "reasoning": "Cette paire est utile pour évaluer la compréhension des liens entre les articles de la réglementation bancaire, ce qui est essentiel pour une bonne connaissance des responsabilités dans le cadre de la gouvernance de la Banque centrale.",
+    "source_chunk_id": "REG-P0015-000098-d90837a8",
+    "source_page": 15,
+    "source_article": "Article 49"
+  },
+  {
+    "question": "Qu'est-ce qu'un système de contrôle de la conformité au sein des établissements de crédit ?",
+    "answer": "Un système de contrôle de la conformité au sein des établissements de crédit est un dispositif mis en place pour s'assurer que ces établissements respectent les lois, règlements et normes applicables. Il vise à prévenir les risques juridiques et réglementaires en veillant à ce que les activités des établissements de crédit soient conformes aux exigences réglementaires. [Page 4, Circulaire n°2006-06]",
+    "citations": [
+      {
+        "page": 4,
+        "article": "Circulaire n°2006-06",
+        "excerpt": "relative à l’institution d’un système de contrôle de la conformité au sein des établissements de crédit"
+      }
+    ],
+    "query_type": "definition",
+    "difficulty": "medium",
+    "reasoning": "Cette paire est utile pour évaluer la compréhension des termes techniques liés à la réglementation bancaire, ce qui est essentiel pour naviguer dans le cadre légal et opérationnel des établissements de crédit.",
+    "source_chunk_id": "REG-P0004-000015-0c453d5c",
+    "source_page": 4,
+    "source_article": "Décret n°2012-3416"
+  },
+  {
+    "question": "Quelles sont les implications des conventions mentionnées à l'article 43 sur l'échange d'informations confidentielles et comment cela se relie-t-il aux dispositions de l'article 40 ?",
+    "answer": "Les conventions définies à l'article 43 établissent les modalités de contrôle et de participation à des collèges de supervision, tout en précisant que l'échange d'informations confidentielles n'est permis que sous certaines conditions. Cela se relie à l'article 40 qui stipule que la banque centrale permet des dispositions spécifiques liées à la supervision. Ensemble, ces articles soulignent l'importance de la transparence tout en protégeant la confidentialité des informations. [Page 15, Article 43]",
+    "citations": [
+      {
+        "page": 15,
+        "article": "Article 43",
+        "excerpt": "Ces conventions définissent notamment les modalités d’exercice de contrôle..."
+      },
+      {
+        "page": 15,
+        "article": "Article 40",
+        "excerpt": "La banque centrale permet aux..."
+      }
+    ],
+    "query_type": "cross_reference",
+    "difficulty": "medium",
+    "reasoning": "Cette paire est utile pour évaluer la compréhension des liens entre différents articles de la réglementation bancaire et leur impact sur la supervision et la confidentialité.",
+    "source_chunk_id": "REG-P0015-000091-725dc868",
+    "source_page": 15,
+    "source_article": "Article 43"
+  },
+  {
+    "question": "Comment les articles 38 et 39 interagissent-ils avec les sanctions mentionnées à l'article 40 concernant les contrevenants ?",
+    "answer": "Les articles 38 et 39 définissent des dispositions spécifiques que les établissements doivent respecter. En cas de non-respect de ces articles, des sanctions sont appliquées, comme indiqué dans l'article 40, qui stipule que la banque centrale peut suspendre le service de consultation pour tout contrevenant. Cela montre une relation directe entre les articles, où la violation des articles 38 et 39 entraîne des conséquences selon l'article 40 [Page 14, Article 40].",
+    "citations": [
+      {
+        "page": 14,
+        "article": "Article 40",
+        "excerpt": "la banque centrale peut suspendre, à titre provisoire ou définitif, le service de consultation à l’égard de tout contrevenant aux dispositions des articles 38 et 39"
+      }
+    ],
+    "query_type": "cross_reference",
+    "difficulty": "medium",
+    "reasoning": "Cette paire est utile pour évaluer la compréhension des interconnexions entre les articles de loi, ce qui est essentiel pour l'application correcte des réglementations bancaires.",
+    "source_chunk_id": "REG-P0014-000082-82e9568e",
+    "source_page": 14,
+    "source_article": "Article 40"
+  },
+  {
+    "question": "Comment la Banque centrale tunisienne peut-elle collaborer avec les autorités étrangères concernant le secret professionnel et la surveillance macroprudentielle ?",
+    "answer": "La Banque centrale tunisienne a la possibilité de conclure des accords de coopération avec des autorités étrangères qui se chargent de la surveillance macroprudentielle, ce qui inclut le respect des obligations liées au secret professionnel. Cela signifie qu'elle peut échanger des informations tout en respectant les normes de confidentialité imposées par le secret professionnel. [Page 11, Article 18]",
+    "citations": [
+      {
+        "page": 11,
+        "article": "Article 18",
+        "excerpt": "La banque centrale peut conclure des accords de coopération avec les autorités étrangères chargées de la surveillance macroprudentielle et échanger avec..."
+      }
+    ],
+    "query_type": "multi_hop",
+    "difficulty": "medium",
+    "reasoning": "Cette paire est utile car elle nécessite une compréhension des interactions entre la coopération internationale et les obligations de secret professionnel, ce qui est crucial pour évaluer la conformité et la protection des données dans le cadre bancaire.",
+    "source_chunk_id": "REG-P0011-000054-c41c553e",
+    "source_page": 11,
+    "source_article": "Article 18"
+  },
+  {
+    "question": "Quelles sont les étapes à suivre par la Banque centrale avant l'établissement de la version définitive d'un procès-verbal concernant un contrevenant, et comment cela se rapporte-t-il aux articles précédents sur les sanctions ?",
+    "answer": "Avant l'établissement de la version définitive du procès-verbal, la Banque centrale convoque le contrevenant par lettre, comme stipulé dans l'Article 40. Cela implique que le contrevenant doit être informé et avoir l'opportunité de répondre avant que des sanctions ne soient appliquées. Cette procédure est essentielle pour garantir le respect des droits des contrevenants et est en lien avec les articles 38 et 39, qui traitent des sanctions applicables aux violations des règlements bancaires. [Page 14, Article 40]",
+    "citations": [
+      {
+        "page": 14,
+        "article": "Article 40",
+        "excerpt": "Avant l’établissement de la version définitive du procès-verbal, le contrevenant est convoqué par lettre."
+      }
+    ],
+    "query_type": "multi_hop",
+    "difficulty": "medium",
+    "reasoning": "Cette paire est utile pour évaluer la compréhension des procédures réglementaires de la Banque centrale et leur interaction avec les articles relatifs aux sanctions, ce qui nécessite une synthèse d'informations.",
+    "source_chunk_id": "REG-P0014-000083-b8607529",
+    "source_page": 14,
+    "source_article": "Article 40"
+  }
+]

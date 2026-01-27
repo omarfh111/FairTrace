@@ -30,7 +30,7 @@ CACHE_AVAILABLE = False
 load_dotenv()
 
 # Configuration
-DENSE_MODEL = "mxbai-embed-large"
+DENSE_MODEL = "qwen3-embedding:0.6b"
 DENSE_DIM = 1024
 SPARSE_MODEL = "Qdrant/bm42-all-minilm-l6-v2-attentions"
 SEMANTIC_CACHE_THRESHOLD = 0.82
@@ -48,7 +48,7 @@ def get_qdrant_client() -> QdrantClient:
         api_key = os.getenv("QDRANT_API_KEY")
         if not url or not api_key:
             raise ValueError("QDRANT_URL and QDRANT_API_KEY must be set")
-        _qdrant_client = QdrantClient(url=url, api_key=api_key, timeout=120)
+        _qdrant_client = QdrantClient(url=url, api_key=api_key, timeout=250)
     return _qdrant_client
 
 
@@ -112,21 +112,21 @@ def embed_sparse(text: str) -> tuple[list[int], list[float]]:
 
 
 # =============================================================================
-# RERANKING WITH MXBAI-RERANK
+# RERANKING WITH SENTENCE-TRANSFORMERS CROSSENCODER
 # =============================================================================
-# Uses mixedbread-ai/mxbai-rerank-base-v2 for production-grade reranking
-from mxbai_rerank import MxbaiRerankV2
+# Uses ms-marco-MiniLM-L-6-v2 for fast, reliable reranking
+from sentence_transformers import CrossEncoder
 
 # Singleton for reranker model
-_reranker_model: MxbaiRerankV2 | None = None
+_reranker_model: CrossEncoder | None = None
 
 
-def get_reranker() -> MxbaiRerankV2:
+def get_reranker() -> CrossEncoder:
     """Get or create reranker model singleton."""
     global _reranker_model
     if _reranker_model is None:
-        print("Loading mxbai-rerank-base-v2 (first use)...")
-        _reranker_model = MxbaiRerankV2("mixedbread-ai/mxbai-rerank-base-v2")
+        print("Loading cross-encoder/ms-marco-MiniLM-L-6-v2 (first use)...")
+        _reranker_model = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2", max_length=512)
         print("✓ Reranker loaded")
     return _reranker_model
 
@@ -139,6 +139,11 @@ def _format_doc_for_rerank(payload: dict) -> str:
         return f"Startup: {payload.get('sector', '')} sector, ARR ${payload.get('arr_current', 0):,.0f}, runway {payload.get('runway_months', 0):.0f}mo, outcome: {payload.get('outcome', 'Unknown')}"
     elif "enterprise_id" in payload:
         return f"Enterprise: {payload.get('industry_code', '')} industry, revenue €{payload.get('revenue_annual', 0):,.0f}, Z-score {payload.get('altman_z_score', 0):.2f}, outcome: {payload.get('outcome', 'Unknown')}"
+    elif "content" in payload:  # Regulation chunks
+        article = payload.get('article_ref', '')
+        page = payload.get('page_number', '')
+        content = payload.get('content', '')[:500]
+        return f"[Page {page}] {article}\n{content}"
     else:
         return str(payload)[:300]
 
@@ -150,9 +155,9 @@ def rerank_results(
     top_k: int = 10
 ) -> tuple[list[dict], float]:
     """
-    Rerank search results using mxbai-rerank-base-v2.
+    Rerank search results using CrossEncoder.
     
-    Uses batch processing for fast, production-grade reranking.
+    Uses ms-marco-MiniLM-L-6-v2 for fast, production-grade reranking.
     
     Args:
         query: The search query
@@ -173,22 +178,24 @@ def rerank_results(
         # Format documents for reranking
         documents = [_format_doc_for_rerank(r.get("payload", {})) for r in results]
         
-        # Batch rerank all documents at once (fast!)
-        rerank_output = reranker.rank(query, documents, return_documents=False, top_k=len(results))
+        # Create query-document pairs for CrossEncoder
+        pairs = [[query, doc] for doc in documents]
+        
+        # Score all pairs at once
+        scores = reranker.predict(pairs)
         
         # Build scored results maintaining original result data
-        # RankResult objects have .index and .score attributes
         scored_results = []
-        for item in rerank_output:
-            idx = item.index  # Access as attribute, not dict
-            score = item.score
-            original_result = results[idx]
+        for i, (result, score) in enumerate(zip(results, scores)):
             scored_results.append({
-                **original_result,
-                "original_score": original_result.get("score", 0),
-                "rerank_score": score,
-                "score": score
+                **result,
+                "original_score": result.get("score", 0),
+                "rerank_score": float(score),
+                "score": float(score)
             })
+        
+        # Sort by rerank score (descending)
+        scored_results.sort(key=lambda x: x["rerank_score"], reverse=True)
         
     except Exception as e:
         print(f"⚠️ Reranking failed: {e}, using original order")
@@ -555,9 +562,11 @@ def search_regulations(
     dense_vector: list[float] | None = None,
     sparse_indices: list[int] | None = None,
     sparse_values: list[float] | None = None,
+    rerank: bool = False,
+    rerank_top_k: int | None = None,
 ) -> dict:
     """
-    Hybrid search for banking regulations (regulations_v2 collection).
+    Hybrid search for banking regulations (regulations_v3 collection).
     
     Uses RRF fusion of 'content' (dense) and 'keywords' (sparse) vectors.
     
@@ -570,12 +579,19 @@ def search_regulations(
         dense_vector: Pre-computed dense embedding (optional)
         sparse_indices: Pre-computed sparse indices (optional)
         sparse_values: Pre-computed sparse values (optional)
+        rerank: If True, use mxbai reranker for two-stage retrieval
+        rerank_top_k: Initial results to retrieve before reranking (default: limit * 3)
         
     Returns:
         Dict with results, count, latency, and metadata
     """
     start = time.time()
-    collection = "regulations_v2"
+    collection = "regulations_v4"
+    
+    # For reranking, retrieve more initially
+    retrieval_limit = limit
+    if rerank:
+        retrieval_limit = rerank_top_k or (limit * 3)
     
     client = get_qdrant_client()
     
@@ -610,12 +626,12 @@ def search_regulations(
         models.Prefetch(
             query=dense_vector,
             using="content",  # Regulations use 'content' not 'structured'
-            limit=limit * 2
+            limit=retrieval_limit * 2
         ),
         models.Prefetch(
             query=models.SparseVector(indices=sparse_indices, values=sparse_values),
             using="keywords",
-            limit=limit * 2
+            limit=retrieval_limit * 2
         )
     ]
     
@@ -626,13 +642,19 @@ def search_regulations(
         prefetch=prefetch,
         query=models.FusionQuery(fusion=models.Fusion.RRF),
         query_filter=query_filter,
-        limit=limit,
+        limit=retrieval_limit,
         with_payload=True
     )
     search_latency = (time.time() - search_start) * 1000
     
-    total_latency = (time.time() - start) * 1000
     formatted = [{"id": r.id, "score": r.score, "payload": r.payload} for r in results.points]
+    
+    # Apply reranking if enabled
+    rerank_latency = 0.0
+    if rerank and formatted:
+        formatted, rerank_latency = rerank_results(query_text, formatted, top_k=limit)
+    
+    total_latency = (time.time() - start) * 1000
     
     return {
         "results": formatted,
@@ -640,6 +662,8 @@ def search_regulations(
         "latency_ms": round(total_latency, 2),
         "embed_latency_ms": round(embed_latency, 2),
         "search_latency_ms": round(search_latency, 2),
+        "rerank_latency_ms": round(rerank_latency, 2) if rerank else None,
+        "reranked": rerank,
         "collection": collection,
         "vector_type": "hybrid",
         "filters_applied": all_filters if all_filters else None

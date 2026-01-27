@@ -54,7 +54,7 @@ class Settings(BaseSettings):
         description="Ollama server URL"
     )
     EMBEDDING_MODEL: str = Field(
-        default="mxbai-embed-large",
+        default="qwen3-embedding:0.6b",
         description="Dense embedding model"
     )
     

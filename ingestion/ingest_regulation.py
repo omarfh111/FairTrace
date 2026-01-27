@@ -43,19 +43,23 @@ load_dotenv()
 # --- Configuration ---
 DATA_DIR = Path(__file__).parent.parent / "data"
 PDF_FILE = DATA_DIR / "reg_bancaire.pdf"
-COLLECTION_NAME = "regulations_v2"
+COLLECTION_NAME = "regulations_v4"  # New collection with Qwen3 embeddings
 
 # Dense Embedding (Ollama - local)
-DENSE_MODEL = "mxbai-embed-large"
+DENSE_MODEL = "qwen3-embedding:0.6b"  # 32K context, better multilingual
 DENSE_DIM = 1024
 
 # Sparse Embedding (FastEmbed BM42)
 SPARSE_MODEL = "Qdrant/bm42-all-minilm-l6-v2-attentions"
 
-# Chunking configuration
-CHUNK_SIZE = 256  # Target tokens per chunk (reduced for embedding model compatibility)
-MIN_CHARACTERS_PER_CHUNK = 50  # Minimum characters for a valid chunk
-MAX_EMBED_CHARS = 2000  # Max characters to send to embedding model (~500 tokens)
+# Chunking configuration - IMPROVED for regulatory content
+CHUNK_SIZE = 768  # Larger chunks now that we have 32K context
+MIN_CHARACTERS_PER_CHUNK = 200  # Higher minimum
+MAX_EMBED_CHARS = 8000  # Safe limit for qwen3-embedding (32K tokens available)
+
+# Target chunk size in characters for optimal retrieval
+TARGET_CHUNK_CHARS = 600  # ~150 words, ~2-3 sentences
+MAX_CHUNK_CHARS = 1200   # Upper limit
 
 BATCH_SIZE = 25
 MAX_RETRIES = 3
@@ -71,12 +75,22 @@ print("Loading sparse embedding model...")
 sparse_encoder = SparseTextEmbedding(model_name=SPARSE_MODEL)
 print("✓ Sparse model loaded")
 
-print("Initializing Chonkie chunker...")
-chunker = RecursiveChunker(
-    chunk_size=CHUNK_SIZE,
-    min_characters_per_chunk=MIN_CHARACTERS_PER_CHUNK,
-)
-print("✓ Chonkie chunker initialized")
+print("Initializing Chonkie SemanticChunker...")
+try:
+    from chonkie import SemanticChunker
+    chunker = SemanticChunker(
+        embedding_model="minishlab/potion-base-8M",  # Fast local embeddings
+        chunk_size=CHUNK_SIZE,
+        threshold=0.5,  # Similarity threshold for semantic boundaries
+    )
+    print("✓ Semantic chunker initialized")
+except Exception as e:
+    print(f"⚠️ SemanticChunker failed ({e}), falling back to RecursiveChunker")
+    chunker = RecursiveChunker(
+        chunk_size=CHUNK_SIZE,
+        min_characters_per_chunk=MIN_CHARACTERS_PER_CHUNK,
+    )
+    print("✓ Fallback RecursiveChunker initialized")
 
 
 # =============================================================================
@@ -121,19 +135,18 @@ def extract_pdf_pages(pdf_path: Path) -> list[dict]:
 def extract_article_reference(text: str) -> str | None:
     """
     Extract article/section reference from text.
-    
-    Patterns:
-        - "Article 52"
-        - "Art. 52"
-        - "Section 3.2"
-        - "Chapitre 4"
+    Improved patterns for Tunisian banking regulations.
     """
     patterns = [
-        r'(Article\s+\d+[\.\-]?\d*)',
-        r'(Art\.\s*\d+[\.\-]?\d*)',
+        r'(Article\s+\d+[\.-]?\d*)',
+        r'(Art\.\s*\d+[\.-]?\d*)',
         r'(Section\s+\d+[\.\d]*)',
         r'(Chapitre\s+\d+)',
         r'(Titre\s+[IVX]+)',
+        r'(Circulaire\s+(?:aux\s+banques\s+)?n[°o]?\s*\d{2,4}[\-/]\d+)',
+        r'(Note\s+(?:aux\s+(?:banques|établissements)\s+)?n[°o]?\s*\d+)',
+        r'(Décret\s+n[°o]?\s*\d{4}[\-/]\d+)',
+        r'(Loi\s+n[°o]?\s*\d{4}[\-/]\d+)',
     ]
     
     for pattern in patterns:
@@ -167,7 +180,7 @@ def extract_section_title(text: str) -> str | None:
 # =============================================================================
 def chunk_pages(pages: list[dict]) -> list[dict]:
     """
-    Chunk all pages using Chonkie's RecursiveChunker.
+    Chunk all pages using semantic chunking for better regulatory content segmentation.
     
     Returns list of chunks with metadata:
         - chunk_id: unique identifier
@@ -179,27 +192,35 @@ def chunk_pages(pages: list[dict]) -> list[dict]:
     """
     all_chunks = []
     chunk_counter = 0
+    current_article_ref = None  # Track current article for context propagation
+    current_section = None
     
-    print(f"\nChunking {len(pages)} pages...")
+    print(f"\nChunking {len(pages)} pages with semantic chunker...")
     
     for page in tqdm(pages, desc="Chunking"):
         page_num = page["page_number"]
         text = page["text"]
         has_tables = page["has_tables"]
         
+        # Pre-process: add paragraph breaks at article boundaries
+        text = re.sub(r'(Article\s+\d+)', r'\n\n\1', text)
+        text = re.sub(r'(Circulaire\s+(?:aux\s+banques\s+)?n[°o]?)', r'\n\n\1', text)
+        
         # Use Chonkie to chunk the page text
         try:
             chunks = chunker.chunk(text)
         except Exception as e:
-            print(f"⚠️ Chunking error on page {page_num}: {e}")
-            # Fallback: use the whole page as one chunk
-            chunks = [type('Chunk', (), {'text': text})]
+            print(f"\n⚠️ Chunking error on page {page_num}: {e}")
+            # Fallback: split by paragraphs
+            paragraphs = text.split('\n\n')
+            chunks = [type('Chunk', (), {'text': p.strip()}) for p in paragraphs if p.strip()]
         
         for chunk in chunks:
             chunk_text = chunk.text if hasattr(chunk, 'text') else str(chunk)
+            chunk_text = chunk_text.strip()
             
             # Skip very short chunks
-            if len(chunk_text.strip()) < MIN_CHARACTERS_PER_CHUNK:
+            if len(chunk_text) < MIN_CHARACTERS_PER_CHUNK:
                 continue
             
             chunk_counter += 1
@@ -208,9 +229,14 @@ def chunk_pages(pages: list[dict]) -> list[dict]:
             content_hash = hashlib.md5(chunk_text.encode()).hexdigest()[:8]
             chunk_id = f"REG-P{page_num:04d}-{chunk_counter:06d}-{content_hash}"
             
-            # Extract metadata
+            # Extract metadata with context propagation
             article_ref = extract_article_reference(chunk_text)
+            if article_ref:
+                current_article_ref = article_ref
+            
             section_title = extract_section_title(chunk_text)
+            if section_title:
+                current_section = section_title
             
             # Determine chunk type
             chunk_type = "table" if has_tables and re.search(r'\t|\|', chunk_text) else "text"
@@ -219,20 +245,24 @@ def chunk_pages(pages: list[dict]) -> list[dict]:
                 "chunk_id": chunk_id,
                 "content": chunk_text,
                 "page_number": page_num,
-                "article_ref": article_ref,
-                "section_title": section_title,
+                "article_ref": article_ref or current_article_ref,  # Use current if none found
+                "section_title": section_title or current_section,
                 "chunk_type": chunk_type,
                 "char_count": len(chunk_text),
             })
     
-    print(f"✓ Created {len(all_chunks)} chunks")
+    print(f"\n✓ Created {len(all_chunks)} chunks")
     
     # Stats
+    char_lengths = [c["char_count"] for c in all_chunks]
     table_chunks = sum(1 for c in all_chunks if c["chunk_type"] == "table")
     with_article = sum(1 for c in all_chunks if c["article_ref"])
+    
+    print(f"  - Avg chunk size: {sum(char_lengths)/len(char_lengths):.0f} chars")
+    print(f"  - Min: {min(char_lengths)}, Max: {max(char_lengths)} chars")
     print(f"  - Text chunks: {len(all_chunks) - table_chunks}")
     print(f"  - Table chunks: {table_chunks}")
-    print(f"  - With article reference: {with_article}")
+    print(f"  - With article reference: {with_article} ({with_article/len(all_chunks):.0%})")
     
     return all_chunks
 
@@ -245,12 +275,21 @@ def embed_dense(text: str) -> list[float]:
     Generate dense embedding using local Ollama model.
     Truncates text to MAX_EMBED_CHARS to avoid context length errors.
     """
-    # Truncate to avoid exceeding model context length
-    if len(text) > MAX_EMBED_CHARS:
-        text = text[:MAX_EMBED_CHARS]
+    # Always truncate to avoid exceeding model context length
+    # mxbai-embed-large has 512 token limit (~1500 chars for French text)
+    text = text[:MAX_EMBED_CHARS].strip()
     
-    response = ollama.embed(model=DENSE_MODEL, input=text)
-    return response["embeddings"][0]
+    if not text:
+        # Return zero vector for empty text
+        return [0.0] * DENSE_DIM
+    
+    try:
+        response = ollama.embed(model=DENSE_MODEL, input=text)
+        return response["embeddings"][0]
+    except Exception as e:
+        print(f"\n⚠️ Embedding error: {e}")
+        # Return zero vector on error
+        return [0.0] * DENSE_DIM
 
 
 def embed_sparse(text: str) -> tuple[list[int], list[float]]:

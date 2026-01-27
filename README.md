@@ -415,7 +415,7 @@ cd frontend
 npm run dev
 ```
 
-Open http://localhost:5173 in your browser.
+Open http://localhost:8081 in your browser.
 
 ---
 
@@ -423,31 +423,43 @@ Open http://localhost:5173 in your browser.
 
 ```
 fairtrace/
-├── api/                        # FastAPI backend
-│   ├── main.py                 # Application entry point
-│   ├── schemas.py              # Pydantic models
-│   └── routes/
-│       └── decisions.py        # API endpoints
-│
 ├── agents/                     # AI agents
-│   ├── base_agent.py           # Shared LLM configuration
+│   ├── orchestrator.py         # Main orchestrator (GPT-4o)
+│   ├── regulation_agent.py     # Banking regulation expert (RAG)
 │   ├── risk_agent.py           # Risk assessment
 │   ├── fairness_agent.py       # Fairness evaluation
 │   ├── trajectory_agent.py     # Outcome prediction
-│   ├── advisor_agent.py        # Improvement recommendations
-│   ├── narrative_agent.py      # Historical narratives
-│   ├── comparator_agent.py     # Gap analysis
-│   └── scenario_agent.py       # What-if scenarios
+│   └── ...                     # On-demand agents (Advisor, Narrative, etc.)
 │
-├── graph/                      # LangGraph workflow
-│   └── decision_graph.py       # Parallel agent orchestration
+├── api/                        # FastAPI backend
+│   ├── main.py                 # App entry point
+│   ├── routes/                 # API endpoints
+│   └── schemas.py              # Pydantic models
+│
+├── evaluation/                 # Evaluation framework
+│   ├── generate_regulation_eval.py # Dataset generation
+│   ├── run_regulation_eval.py  # Run RAG evaluation
+│   ├── analyze_chunks.py       # Chunk quality analysis
+│   └── metrics/                # Evaluation results
+│
+├── ingestion/                  # Data ingestion
+│   ├── ingest_regulation.py    # Banking regulation ingestion (PDF)
+│   └── ingest_to_qdrant.py     # Synthetic data ingestion
+│
+├── frontend/                   # Next.js frontend
+│   ├── src/components/         # React components
+│   └── src/app/                # App router pages
 │
 ├── tools/                      # Agent tools
 │   └── qdrant_retriever.py     # Hybrid vector search
 │
-├── db/                         # Database layer
-│   ├── __init__.py
-│   └── repository.py           # Async CRUD operations
+├── data/                       # Data files
+│   └── reg_bancaire.pdf        # Banking regulation PDF
+│
+├── graph/                      # LangGraph workflow
+│   └── decision_graph.py       # Parallel orchestration
+│
+└── config.py                   # Global configuration
 │
 ├── data_generation/            # Synthetic data generation
 │   ├── generate_data.py        # Main data generator script
@@ -669,6 +681,96 @@ python evaluation/run_evaluation.py --limit 50 --parse
 - Query understanding reduced false positives significantly
 - Cross-encoder reranking was **removed** due to 80x latency increase with degraded accuracy
 - Final system favors **consistency and explainability** over raw speed
+
+### BCT Regulation Agent Performance
+
+Evaluation of the banking regulation RAG system (BCT circulars, 568-page PDF).
+
+#### Architecture
+
+```mermaid
+flowchart LR
+    subgraph Input
+        Q[User Query]
+    end
+    
+    subgraph "Regulation Agent"
+        QU[Query Understanding]
+        HS[Hybrid Search]
+        QA[Quality Assessment]
+        RF[Query Reformulation]
+        LLM[LLM Generation]
+    end
+    
+    subgraph Storage
+        QD[(Qdrant Cloud)]
+        PDF[568-page PDF]
+    end
+    
+    Q --> QU
+    QU --> HS
+    HS <--> QD
+    PDF -.->|Ingested| QD
+    HS --> QA
+    QA -->|Poor results| RF
+    RF -->|Retry| HS
+    QA -->|Good results| LLM
+    LLM --> R[Structured Response + Citations]
+```
+
+#### Final Metrics (v4 + Optimized Prompt)
+
+| Metric | Value |
+|--------|-------|
+| **Pass Rate** | **92.3%** |
+| **Judge Score** | 3.92/5 |
+| **MRR** | 0.746 |
+| **Recall@5** | 0.885 |
+| **Recall@10** | 0.962 |
+
+#### Version Comparison
+
+| Metric | v2 Baseline | v4 (Qwen3) | Improvement |
+|--------|-------------|------------|-------------|
+| **Pass Rate** | 7.7% | **92.3%** | 🚀 +1100% |
+| **MRR** | 0.666 | 0.746 | +12% |
+| **Recall@10** | 0.867 | 0.962 | +11% |
+| **Chunks** | 8,029 | 3,341 | -58% |
+
+#### By Query Type
+
+| Type | Count | Recall@5 | MRR | Judge |
+|------|-------|----------|-----|-------|
+| `multi_hop` | 5 | 1.00 | **1.00** | 4.0/5 |
+| `procedural` | 3 | 1.00 | **1.00** | 4.0/5 |
+| `single_lookup` | 7 | 1.00 | 0.71 | 3.9/5 |
+| `cross_reference` | 5 | 0.80 | 0.73 | 3.8/5 |
+| `definition` | 5 | 0.60 | 0.49 | 4.0/5 |
+| `comparative` | 1 | 1.00 | 0.33 | 4.0/5 |
+
+#### Key Optimizations
+
+- **Semantic chunking** (768 tokens) preserves regulatory context
+- **Qwen3 embeddings** (32K context) eliminate truncation errors
+- **Context propagation** ensures 100% article reference coverage
+- **Few-shot prompting** dramatically improved answer quality
+- **Agentic retry loop** reformulates queries on poor retrieval
+
+#### Running Evaluations
+
+```bash
+# Generate evaluation dataset (26 Q&A pairs)
+python evaluation/generate_regulation_eval.py
+
+# Run evaluation with LLM judge
+python evaluation/run_regulation_eval.py
+
+# Retrieval-only evaluation (faster)
+python evaluation/run_regulation_eval.py --retrieval-only
+
+# Analyze chunk quality
+python evaluation/analyze_chunks.py --sample 100
+```
 
 ---
 

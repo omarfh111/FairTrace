@@ -44,34 +44,51 @@ class RegulationAgent(BaseAgent):
     
     @property
     def system_prompt(self) -> str:
-        return """Tu es un expert en réglementation bancaire tunisienne (BCT - Banque Centrale de Tunisie).
+        return """Tu es un expert juridique en réglementation bancaire tunisienne (BCT - Banque Centrale de Tunisie).
 
-Tu réponds aux questions sur la réglementation bancaire en te basant UNIQUEMENT sur les documents fournis.
+## Ta Mission
+Fournir des réponses précises et bien structurées sur la réglementation bancaire en te basant UNIQUEMENT sur les documents fournis.
 
-Règles importantes:
-1. Réponds toujours en français sauf si l'utilisateur pose sa question en anglais
-2. Cite TOUJOURS les articles et pages sources entre crochets, ex: [Article 5, Page 42]
-3. Si l'information n'est pas dans les documents, dis-le clairement
-4. Structure tes réponses avec des titres et puces pour la clarté
-5. Sois précis et concis, évite les répétitions
+## Règles Strictes
+1. **Langue**: Réponds en français (sauf si question en anglais)
+2. **Citations obligatoires**: Chaque affirmation DOIT être suivie d'une citation [Article X, Page Y]
+3. **Fidélité**: Ne JAMAIS inventer ou extrapoler - reste fidèle aux documents
+4. **Clarté**: Utilise des listes à puces et sous-titres pour structurer
+5. **Complétude**: Couvre TOUS les aspects de la question mentionnés dans les documents
 
-Format de réponse JSON:
+## Format de Citation
+- Pour les articles: [Article 5, Page 42]
+- Pour les circulaires: [Circulaire n°2006-11, Page 158]
+- Pour les notes: [Note aux banques du 15/01/2020, Page 89]
+
+## Exemple de Bonne Réponse
+Question: "Quels sont les objectifs de la Banque centrale?"
+
+Réponse:
+**Les objectifs de la Banque centrale de Tunisie sont:**
+
+1. **Stabilité des prix** - Maintenir la stabilité monétaire et maîtriser l'inflation [Article 7, Page 15]
+
+2. **Stabilité financière** - Assurer la solidité du système bancaire et prévenir les risques systémiques [Article 8, Page 16]
+
+3. **Politique de change** - Gérer les réserves de change et la politique monétaire [Article 10, Page 18]
+
+## Format JSON de Réponse
 {
-    "answer": "Ta réponse détaillée avec citations [Article X, Page Y]",
+    "answer": "Réponse structurée avec citations [Article X, Page Y] à chaque affirmation clé",
     "citations": [
-        {"article": "Article 5", "page": 42, "excerpt": "Texte pertinent..."},
-        {"article": "Article 10", "page": 58, "excerpt": "Autre texte..."}
+        {"article": "Article 7", "page": 15, "excerpt": "Extrait exact du texte..."}
     ],
     "confidence": "HIGH" | "MEDIUM" | "LOW",
-    "follow_up_questions": ["Question suggérée 1?", "Question suggérée 2?"]
+    "follow_up_questions": ["Question pertinente 1?", "Question pertinente 2?"]
 }
 
-Si aucune information pertinente n'est trouvée:
+## Si Information Non Trouvée
 {
-    "answer": "Je n'ai pas trouvé d'information sur ce sujet dans la réglementation bancaire.",
+    "answer": "Les documents consultés ne contiennent pas d'information spécifique sur [sujet]. Cependant, les articles suivants pourraient être pertinents: [suggestions]",
     "citations": [],
     "confidence": "LOW",
-    "follow_up_questions": ["Questions alternatives suggérées..."]
+    "follow_up_questions": ["Questions alternatives..."]
 }"""
 
     @property
@@ -150,8 +167,13 @@ Donne une nouvelle formulation de la question:"""}
             # Fallback: just add context
             return f"réglementation bancaire BCT {original_query}"
     
-    def search_evidence(self, query: str) -> list[dict]:
-        """Search regulations collection for relevant chunks."""
+    def search_evidence(self, query: str, rerank: bool = False) -> list[dict]:
+        """Search regulations collection for relevant chunks.
+        
+        Args:
+            query: Search query text
+            rerank: If True, use mxbai reranker for two-stage retrieval
+        """
         # Compute embeddings once
         dense_vec, sparse_idx, sparse_vals = embed_query(query)
         
@@ -161,14 +183,20 @@ Donne une nouvelle formulation de la question:"""}
             limit=8,  # Get top 8 most relevant chunks
             dense_vector=dense_vec,
             sparse_indices=sparse_idx,
-            sparse_values=sparse_vals
+            sparse_values=sparse_vals,
+            rerank=rerank,
+            rerank_top_k=24 if rerank else None  # 3x for reranking
         )
         
         return response.get("results", [])
     
-    def search_with_retry(self, query: str) -> tuple[list[dict], list[str], int]:
+    def search_with_retry(self, query: str, rerank: bool = False) -> tuple[list[dict], list[str], int]:
         """
         Agentic search with retry and query reformulation.
+        
+        Args:
+            query: Search query text
+            rerank: If True, use mxbai reranker for two-stage retrieval
         
         Returns:
             (results, queries_tried, attempt_count)
@@ -178,7 +206,7 @@ Donne une nouvelle formulation de la question:"""}
         
         for attempt in range(1, MAX_RETRIEVAL_ATTEMPTS + 1):
             # Search with current query
-            results = self.search_evidence(current_query)
+            results = self.search_evidence(current_query, rerank=rerank)
             
             # Assess quality
             is_good, reason = self._assess_retrieval_quality(results)
@@ -254,7 +282,7 @@ Réponds en JSON avec les citations appropriées."""}
         
         return result
     
-    def chat(self, message: str, conversation_id: Optional[str] = None) -> dict:
+    def chat(self, message: str, conversation_id: Optional[str] = None, rerank: bool = False) -> dict:
         """
         Main chat interface with agentic retry loop.
         
@@ -267,12 +295,13 @@ Réponds en JSON avec les citations appropriées."""}
         Args:
             message: User's question
             conversation_id: Optional ID for conversation continuity
+            rerank: If True, use mxbai reranker for two-stage retrieval
             
         Returns:
             Dict with answer, citations, suggestions, and retrieval metadata
         """
         # Agentic search with retry
-        evidence, queries_tried, attempts = self.search_with_retry(message)
+        evidence, queries_tried, attempts = self.search_with_retry(message, rerank=rerank)
         
         # Generate response
         response = self.analyze(message, evidence, retrieval_attempts=attempts)
@@ -280,6 +309,7 @@ Réponds en JSON avec les citations appropriées."""}
         # Add retrieval metadata
         response["queries_tried"] = queries_tried
         response["used_reformulation"] = len(queries_tried) > 1
+        response["reranked"] = rerank
         
         # Update conversation history
         self.conversation_history.append({
