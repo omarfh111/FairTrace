@@ -1,0 +1,425 @@
+/**
+ * StreamingAnswer.css - Premium Streaming UI Styles
+ * 
+ * Cool animations for typing effect, citation reveals, and status indicators.
+ */
+
+/* ================================
+   STREAMING ANSWER CONTAINER
+================================ */
+.streaming-answer {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ================================
+   STATUS INDICATOR
+================================ */
+.streaming-status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(59, 130, 246, 0.1));
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 12px;
+    color: #a78bfa;
+}
+
+.streaming-status.searching {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(14, 165, 233, 0.1));
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #60a5fa;
+}
+
+.streaming-status.analyzing {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(234, 179, 8, 0.08));
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #fbbf24;
+}
+
+.status-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-text {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* Wave Animation */
+.status-wave {
+    display: flex;
+    gap: 3px;
+    align-items: flex-end;
+    height: 16px;
+}
+
+.status-wave span {
+    width: 3px;
+    height: 8px;
+    background: currentColor;
+    border-radius: 2px;
+    animation: wave 1s ease-in-out infinite;
+}
+
+.status-wave span:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.status-wave span:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+@keyframes wave {
+
+    0%,
+    100% {
+        height: 8px;
+    }
+
+    50% {
+        height: 16px;
+    }
+}
+
+/* ================================
+   STREAMING PANEL
+================================ */
+.streaming-panel {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.9));
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.streaming-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.streaming-meta {
+    display: flex;
+    gap: 16px;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.confidence-badge {
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.confidence-badge.high {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.confidence-badge.medium {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.confidence-badge.low {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Confidence Banner */
+.confidence-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 18px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.confidence-banner.medium {
+    background: rgba(245, 158, 11, 0.08);
+    color: #f59e0b;
+    border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.confidence-banner.low {
+    background: rgba(239, 68, 68, 0.08);
+    color: #ef4444;
+    border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Streaming Text */
+.streaming-text {
+    padding: 18px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #f1f5f9;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.streaming-text::-webkit-scrollbar {
+    width: 4px;
+}
+
+.streaming-text::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.3);
+    border-radius: 4px;
+}
+
+/* Typing Cursor */
+.typing-cursor {
+    color: #8b5cf6;
+    opacity: 0;
+    font-weight: 700;
+    margin-left: 1px;
+    animation: blink 1s infinite;
+}
+
+.typing-cursor.visible {
+    opacity: 1;
+}
+
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+/* ================================
+   CITATIONS GRID
+================================ */
+.streaming-citations {
+    margin-top: 4px;
+}
+
+.citations-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+}
+
+.citations-header svg {
+    color: #3b82f6;
+}
+
+.citations-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+@media (max-width: 600px) {
+    .citations-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Citation Card */
+.citation-card {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 10px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    animation: slideIn 0.3s ease-out forwards;
+    opacity: 0;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.citation-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: #3b82f6;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.citation-card:hover {
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(59, 130, 246, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.citation-card:hover::before {
+    opacity: 1;
+}
+
+.citation-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.citation-article {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #60a5fa;
+}
+
+.citation-page {
+    font-size: 10px;
+    color: #64748b;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.citation-excerpt {
+    font-size: 12px;
+    line-height: 1.5;
+    color: #94a3b8;
+    font-style: italic;
+    border-left: 2px solid rgba(59, 130, 246, 0.3);
+    padding-left: 10px;
+    margin: 0 0 10px 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.citation-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.citation-badge {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    letter-spacing: 0.5px;
+}
+
+.citation-expand {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: #64748b;
+    transition: color 0.2s;
+}
+
+.citation-card:hover .citation-expand {
+    color: #60a5fa;
+}
+
+/* ================================
+   FOLLOW-UP SUGGESTIONS
+================================ */
+.streaming-followups {
+    margin-top: 8px;
+}
+
+.followups-label {
+    display: block;
+    font-size: 10px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.followups-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.followup-chip {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    color: #60a5fa;
+    padding: 8px 14px;
+    border-radius: 100px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    max-width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.followup-chip:hover {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: #3b82f6;
+    transform: translateY(-1px);
+}

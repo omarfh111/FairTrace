@@ -11,13 +11,16 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import {
-    sendChatMessage,
+    sendStreamingChatMessage,
     getChatSuggestions,
     clearChatHistory,
     ChatResponse,
     ChatCitation,
+    StreamingCallbacks,
 } from '../lib/api';
 import './RegulationChatbot.css';
+import { RegulationResponse } from './regulation/RegulationResponse';
+import { StreamingAnswer } from './regulation/StreamingAnswer';
 
 // --- Icons ---
 const BookIcon = () => (
@@ -78,9 +81,21 @@ interface Message {
     id: string;
     role: 'user' | 'assistant';
     content: string;
-    citations?: ChatCitation[];
+    citations?: (ChatCitation & { index: number })[];
     timestamp: Date;
     isLoading?: boolean;
+    isStreaming?: boolean;
+    // Streaming state
+    streamingStatus?: 'idle' | 'searching' | 'analyzing' | 'streaming' | 'citations' | 'done';
+    streamingStatusMessage?: string;
+    streamingMetadata?: {
+        confidence: 'LOW' | 'MEDIUM' | 'HIGH';
+        processingTimeMs: number;
+        citationsCount: number;
+        followUpQuestions: string[];
+    };
+    // Store raw API response for Generative UI rendering
+    rawResponse?: ChatResponse;
 }
 
 export function RegulationChatbot() {
@@ -127,7 +142,7 @@ export function RegulationChatbot() {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [isOpen]);
 
-    const handleSend = useCallback(async () => {
+    const handleSend = useCallback(() => {
         const message = inputValue.trim();
         if (!message || isLoading) return;
 
@@ -142,51 +157,77 @@ export function RegulationChatbot() {
             timestamp: new Date(),
         };
 
-        // Add loading message
-        const loadingMessage: Message = {
-            id: `loading-${Date.now()}`,
+        // Add streaming message
+        const streamingMsgId = `streaming-${Date.now()}`;
+        const streamingMessage: Message = {
+            id: streamingMsgId,
             role: 'assistant',
             content: '',
+            citations: [],
             timestamp: new Date(),
-            isLoading: true,
+            isStreaming: true,
+            streamingStatus: 'idle',
+            streamingStatusMessage: '',
         };
 
-        setMessages(prev => [...prev, userMessage, loadingMessage]);
+        setMessages(prev => [...prev, userMessage, streamingMessage]);
         setIsLoading(true);
 
-        try {
-            const response: ChatResponse = await sendChatMessage(message, conversationId);
-
-            // Update conversation ID
-            if (!conversationId) {
-                setConversationId(response.conversation_id);
+        // Use streaming API
+        const callbacks: StreamingCallbacks = {
+            onStatus: (status, msg) => {
+                setMessages(prev => prev.map(m =>
+                    m.id === streamingMsgId
+                        ? { ...m, streamingStatus: status as Message['streamingStatus'], streamingStatusMessage: msg }
+                        : m
+                ));
+            },
+            onToken: (token) => {
+                setMessages(prev => prev.map(m =>
+                    m.id === streamingMsgId
+                        ? { ...m, content: m.content + token, streamingStatus: 'streaming' }
+                        : m
+                ));
+            },
+            onCitation: (citation) => {
+                setMessages(prev => prev.map(m =>
+                    m.id === streamingMsgId
+                        ? { ...m, citations: [...(m.citations || []), citation], streamingStatus: 'citations' }
+                        : m
+                ));
+            },
+            onDone: (metadata) => {
+                if (!conversationId) {
+                    setConversationId(metadata.conversation_id);
+                }
+                setMessages(prev => prev.map(m =>
+                    m.id === streamingMsgId
+                        ? {
+                            ...m,
+                            isStreaming: false,
+                            streamingStatus: 'done',
+                            streamingMetadata: {
+                                confidence: metadata.confidence,
+                                processingTimeMs: metadata.processing_time_ms,
+                                citationsCount: metadata.citations_count,
+                                followUpQuestions: metadata.follow_up_questions,
+                            }
+                        }
+                        : m
+                ));
+                if (metadata.follow_up_questions?.length) {
+                    setSuggestions(metadata.follow_up_questions);
+                }
+                setIsLoading(false);
+            },
+            onError: (error) => {
+                setMessages(prev => prev.filter(m => m.id !== streamingMsgId));
+                setError(error);
+                setIsLoading(false);
             }
+        };
 
-            // Replace loading with actual response
-            const assistantMessage: Message = {
-                id: `assistant-${Date.now()}`,
-                role: 'assistant',
-                content: response.answer,
-                citations: response.citations,
-                timestamp: new Date(),
-            };
-
-            setMessages(prev =>
-                prev.filter(m => !m.isLoading).concat(assistantMessage)
-            );
-
-            // Update suggestions
-            if (response.follow_up_questions?.length) {
-                setSuggestions(response.follow_up_questions);
-            }
-
-        } catch (err) {
-            // Remove loading message on error
-            setMessages(prev => prev.filter(m => !m.isLoading));
-            setError(err instanceof Error ? err.message : 'Une erreur est survenue');
-        } finally {
-            setIsLoading(false);
-        }
+        sendStreamingChatMessage(message, conversationId, callbacks);
     }, [inputValue, isLoading, conversationId]);
 
     const handleSuggestionClick = (suggestion: string) => {
@@ -289,50 +330,73 @@ export function RegulationChatbot() {
                     )}
 
                     {messages.map((msg) => (
-                        <div
-                            key={msg.id}
-                            className={`message ${msg.role} ${msg.isLoading ? 'loading' : ''}`}
-                        >
-                            {msg.role === 'assistant' && (
-                                <div className="message-avatar">
-                                    <BookIconSmall />
+                        <div key={msg.id}>
+                            {/* User Messages - Keep as chat bubbles */}
+                            {msg.role === 'user' && (
+                                <div className={`message user`}>
+                                    <div className="message-content">
+                                        <div className="message-text">{msg.content}</div>
+                                        <div className="message-time">
+                                            {msg.timestamp.toLocaleTimeString('fr-FR', {
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            })}
+                                        </div>
+                                    </div>
                                 </div>
                             )}
-                            <div className="message-content">
-                                {msg.isLoading ? (
-                                    <div className="typing-indicator">
-                                        <span></span>
-                                        <span></span>
-                                        <span></span>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <div className="message-text">{msg.content}</div>
-                                        {msg.citations && msg.citations.length > 0 && (
-                                            <div className="citations">
-                                                {msg.citations.map((cit, idx) => (
-                                                    <div key={idx} className="citation-card">
-                                                        <div className="citation-header">
-                                                            📄 {cit.article || `Page ${cit.page}`}
-                                                        </div>
-                                                        {cit.excerpt && (
-                                                            <div className="citation-excerpt">
-                                                                "{cit.excerpt.slice(0, 100)}..."
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ))}
+
+                            {/* Assistant Messages - Generative UI */}
+                            {msg.role === 'assistant' && (
+                                <>
+                                    {msg.isStreaming || msg.streamingStatus ? (
+                                        /* Use StreamingAnswer for streaming responses */
+                                        <StreamingAnswer
+                                            status={msg.streamingStatus || 'idle'}
+                                            statusMessage={msg.streamingStatusMessage || ''}
+                                            streamedText={msg.content}
+                                            citations={msg.citations || []}
+                                            metadata={msg.streamingMetadata || null}
+                                            onFollowUpClick={handleSuggestionClick}
+                                        />
+                                    ) : msg.isLoading ? (
+                                        <div className="message assistant loading">
+                                            <div className="message-avatar">
+                                                <BookIconSmall />
                                             </div>
-                                        )}
-                                    </>
-                                )}
-                                <div className="message-time">
-                                    {msg.timestamp.toLocaleTimeString('fr-FR', {
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    })}
-                                </div>
-                            </div>
+                                            <div className="message-content">
+                                                <div className="typing-indicator">
+                                                    <span></span>
+                                                    <span></span>
+                                                    <span></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : msg.rawResponse ? (
+                                        /* Use Generative UI for responses with raw data */
+                                        <RegulationResponse
+                                            response={msg.rawResponse}
+                                            onFollowUpClick={handleSuggestionClick}
+                                        />
+                                    ) : (
+                                        /* Fallback for legacy messages without rawResponse */
+                                        <div className="message assistant">
+                                            <div className="message-avatar">
+                                                <BookIconSmall />
+                                            </div>
+                                            <div className="message-content">
+                                                <div className="message-text">{msg.content}</div>
+                                                <div className="message-time">
+                                                    {msg.timestamp.toLocaleTimeString('fr-FR', {
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    })}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            )}
                         </div>
                     ))}
                     <div ref={messagesEndRef} />

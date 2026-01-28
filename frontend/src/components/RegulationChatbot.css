@@ -223,12 +223,17 @@
 ================================ */
 .chat-messages {
     flex: 1;
+    min-height: 0;
+    /* Critical fix: enables proper flexbox scrolling */
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 20px;
     scroll-behavior: smooth;
+    /* Prevent content from overflowing into header */
+    contain: paint;
 }
 
 .chat-messages::-webkit-scrollbar {

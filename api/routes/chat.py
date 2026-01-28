@@ -118,6 +118,104 @@ async def chat_regulation(request: ChatRequest) -> ChatResponse:
         )
 
 
+from fastapi.responses import StreamingResponse
+import json
+import asyncio
+
+
+@router.post("/regulation/stream")
+async def chat_regulation_stream(request: ChatRequest):
+    """
+    Streaming version of the regulation chat endpoint.
+    
+    Uses Server-Sent Events (SSE) to stream the response in real-time.
+    
+    Event types:
+    - status: Processing status updates
+    - token: Text chunks of the answer
+    - citation: Individual citation objects
+    - done: Final event with metadata (confidence, follow_ups)
+    """
+    try:
+        conversation_id, agent = _get_or_create_agent(request.conversation_id)
+    except HTTPException as e:
+        async def error_stream():
+            yield f"event: error\ndata: {json.dumps({'error': str(e.detail)})}\n\n"
+        return StreamingResponse(error_stream(), media_type="text/event-stream")
+    
+    async def event_generator():
+        start_time = time.time()
+        
+        # Send status: searching
+        yield f"event: status\ndata: {json.dumps({'status': 'searching', 'message': 'Recherche dans la réglementation...'})}\n\n"
+        await asyncio.sleep(0.1)  # Small delay for UI feedback
+        
+        try:
+            # Get response from agent (this is the main blocking call)
+            yield f"event: status\ndata: {json.dumps({'status': 'analyzing', 'message': 'Analyse des documents...'})}\n\n"
+            
+            # Run the blocking chat in executor to not block the event loop
+            import concurrent.futures
+            loop = asyncio.get_event_loop()
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                result = await loop.run_in_executor(executor, agent.chat, request.message)
+            
+            # Stream the answer character by character (simulating typing)
+            answer = result.get("answer", "Désolé, je n'ai pas pu générer une réponse.")
+            
+            yield f"event: status\ndata: {json.dumps({'status': 'streaming', 'message': 'Génération de la réponse...'})}\n\n"
+            
+            # Stream answer in chunks for smooth typing effect
+            chunk_size = 3  # Characters per chunk
+            for i in range(0, len(answer), chunk_size):
+                chunk = answer[i:i + chunk_size]
+                yield f"event: token\ndata: {json.dumps({'text': chunk})}\n\n"
+                await asyncio.sleep(0.02)  # 20ms delay between chunks for typing effect
+            
+            # Small pause before citations
+            await asyncio.sleep(0.3)
+            
+            # Stream citations one by one
+            citations = result.get("citations", [])
+            for i, cit in enumerate(citations):
+                try:
+                    citation_data = {
+                        "index": i,
+                        "article": cit.get("article"),
+                        "page": cit.get("page", 0),
+                        "excerpt": cit.get("excerpt", "")[:300]
+                    }
+                    yield f"event: citation\ndata: {json.dumps(citation_data)}\n\n"
+                    await asyncio.sleep(0.15)  # 150ms delay between citations for animation
+                except Exception:
+                    pass
+            
+            # Send done event with final metadata
+            processing_time = (time.time() - start_time) * 1000
+            done_data = {
+                "conversation_id": conversation_id,
+                "confidence": result.get("confidence", "MEDIUM"),
+                "source_pages": result.get("source_pages", []),
+                "follow_up_questions": result.get("follow_up_questions", [])[:4],
+                "processing_time_ms": round(processing_time, 2),
+                "citations_count": len(citations)
+            }
+            yield f"event: done\ndata: {json.dumps(done_data)}\n\n"
+            
+        except Exception as e:
+            yield f"event: error\ndata: {json.dumps({'error': str(e)})}\n\n"
+    
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"  # Disable nginx buffering
+        }
+    )
+
+
 @router.get("/regulation/suggestions")
 async def get_suggestions(conversation_id: Optional[str] = None) -> dict:
     """

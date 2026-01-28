@@ -412,6 +412,7 @@ uvicorn api.main:app --reload --port 8000
 
 # Terminal 2: Frontend
 cd frontend
+npm install
 npm run dev
 ```
 
