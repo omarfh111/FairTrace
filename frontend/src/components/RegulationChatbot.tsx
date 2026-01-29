@@ -200,21 +200,28 @@ export function RegulationChatbot() {
                 if (!conversationId) {
                     setConversationId(metadata.conversation_id);
                 }
-                setMessages(prev => prev.map(m =>
-                    m.id === streamingMsgId
-                        ? {
+                setMessages(prev => prev.map(m => {
+                    if (m.id === streamingMsgId) {
+                        // Construct the full response object for the Generative UI
+                        const fullResponse: ChatResponse = {
+                            answer: m.content, // The accumulated content
+                            citations: m.citations || [],
+                            confidence: metadata.confidence,
+                            follow_up_questions: metadata.follow_up_questions,
+                            conversation_id: metadata.conversation_id,
+                            processing_time_ms: metadata.processing_time_ms,
+                            source_pages: metadata.source_pages || []
+                        };
+
+                        return {
                             ...m,
                             isStreaming: false,
-                            streamingStatus: 'done',
-                            streamingMetadata: {
-                                confidence: metadata.confidence,
-                                processingTimeMs: metadata.processing_time_ms,
-                                citationsCount: metadata.citations_count,
-                                followUpQuestions: metadata.follow_up_questions,
-                            }
-                        }
-                        : m
-                ));
+                            streamingStatus: undefined, // Clear status to switch to RegulationResponse renderer
+                            rawResponse: fullResponse
+                        };
+                    }
+                    return m;
+                }));
                 if (metadata.follow_up_questions?.length) {
                     setSuggestions(metadata.follow_up_questions);
                 }

@@ -144,14 +144,14 @@ export const Dashboard = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-agent-trajectory flex items-center justify-center">
-                  <Zap className="w-5 h-5 text-white" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-agent-trajectory flex items-center justify-center overflow-hidden shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+                  <img src="/logo.png" alt="FairTrace Logo" className="w-full h-full object-cover" />
                 </div>
                 <div>
                   <h1 className="text-xl font-bold gradient-text bg-gradient-to-r from-primary to-agent-trajectory">
                     FairTrace
                   </h1>
-                  <p className="text-xs text-muted-foreground">Multi-Agent Credit Intelligence</p>
+                  <p className="text-xs text-muted-foreground font-medium tracking-wide">Credit Intelligence System</p>
                 </div>
               </div>
             </div>

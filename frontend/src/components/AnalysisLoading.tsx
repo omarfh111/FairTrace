@@ -1,31 +1,32 @@
+
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 
 const agents = [
   {
     name: 'Risk Agent',
     role: 'The Prosecutor',
     color: 'bg-destructive',
-    glowColor: 'shadow-[0_0_40px_hsl(0_72%_51%/0.5)]',
+    shadowColor: 'shadow-destructive/50',
     gradientFrom: '#ef4444',
-    icon: '🔴'
+    icon: '🛡️'
   },
   {
     name: 'Fairness Agent',
     role: 'The Advocate',
     color: 'bg-success',
-    glowColor: 'shadow-[0_0_40px_hsl(142_71%_45%/0.5)]',
+    shadowColor: 'shadow-success/50',
     gradientFrom: '#10b981',
-    icon: '🟢'
+    icon: '⚖️'
   },
   {
     name: 'Trajectory Agent',
     role: 'The Predictor',
     color: 'bg-agent-trajectory',
-    glowColor: 'shadow-[0_0_40px_hsl(217_91%_60%/0.5)]',
+    shadowColor: 'shadow-agent-trajectory/50',
     gradientFrom: '#3b82f6',
-    icon: '🔵'
+    icon: '📈'
   },
 ];
 
@@ -34,7 +35,6 @@ interface AnalysisLoadingProps {
   progress: number;
 }
 
-// Get orchestrator messages based on progress
 const getOrchestratorMessage = (progress: number, currentAgent: number) => {
   if (progress < 25) return { main: "Risk Agent analyzing...", sub: "Evaluating risk factors and historical patterns" };
   if (progress < 50) return { main: "Fairness Agent analyzing...", sub: "Ensuring equitable treatment standards" };
@@ -47,7 +47,6 @@ const getOrchestratorMessage = (progress: number, currentAgent: number) => {
   return { main: "✓ Decision ready", sub: "Analysis complete" };
 };
 
-// Get progress phase
 const getProgressPhase = (progress: number): 'agents' | 'receiving' | 'synthesis' | 'complete' => {
   if (progress < 75) return 'agents';
   if (progress < 85) return 'receiving';
@@ -58,382 +57,247 @@ const getProgressPhase = (progress: number): 'agents' | 'receiving' | 'synthesis
 export const AnalysisLoading = ({ currentAgent, progress }: AnalysisLoadingProps) => {
   const phase = getProgressPhase(progress);
   const message = getOrchestratorMessage(progress, currentAgent);
+  const [pulse, setPulse] = useState(0);
 
-  // Orchestrator activity level (0-1)
-  const orchestratorActivity = useMemo(() => {
-    if (progress < 75) return 0.3;
-    if (progress < 85) return 0.5 + (progress - 75) * 0.05;
-    if (progress < 95) return 1;
-    return 0.8;
-  }, [progress]);
+  // Periodic pulse effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPulse(p => p + 1);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-4">
-      {/* Main Visualization Area */}
-      <div className="relative mb-8">
-        {/* Background Glow */}
+    <div className="flex flex-col items-center justify-center py-16 px-4 bg-black/20 backdrop-blur-sm rounded-xl border border-white/5 relative overflow-hidden">
+
+      {/* Background ambient glow */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
-          className="absolute inset-0 blur-3xl opacity-30"
-          style={{
-            background: `radial-gradient(circle at center, rgba(139, 92, 246, ${orchestratorActivity * 0.3}) 0%, transparent 70%)`,
-          }}
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.2, 0.4, 0.2],
-          }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/10 rounded-full blur-[100px]"
+          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         />
+      </div>
 
-        {/* Central Orchestrator */}
-        <div className="relative w-72 h-72 flex items-center justify-center">
-          {/* Orchestrator Core */}
-          <motion.div
-            className="absolute z-20"
-            animate={{
-              rotate: 360,
-            }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          >
+      {/* Main Visualization Area */}
+      <div className="relative mb-12 w-full max-w-md h-80 flex items-center justify-center perspective-[1000px]">
+
+        {/* Central Core - The Orchestrator */}
+        <div className="relative z-10 w-24 h-24 flex items-center justify-center">
+          {/* Shockwaves */}
+          {[1, 2, 3].map(i => (
             <motion.div
-              className="w-24 h-24 rounded-2xl flex items-center justify-center relative"
-              style={{
-                background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #8b5cf6 100%)',
-                boxShadow: phase === 'synthesis' || phase === 'complete'
-                  ? '0 0 60px rgba(139, 92, 246, 0.8), inset 0 0 30px rgba(255,255,255,0.2)'
-                  : '0 0 30px rgba(139, 92, 246, 0.4)',
+              key={i}
+              className="absolute inset-0 rounded-full border border-primary/30"
+              initial={{ scale: 1, opacity: 0.5 }}
+              animate={{ scale: 2.5, opacity: 0 }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                delay: i * 0.6,
+                ease: "easeOut"
               }}
-              animate={{
-                scale: phase === 'synthesis' ? [1, 1.1, 1] : [1, 1.05, 1],
-                boxShadow: phase === 'synthesis'
-                  ? [
-                    '0 0 30px rgba(139, 92, 246, 0.4)',
-                    '0 0 80px rgba(139, 92, 246, 0.8)',
-                    '0 0 30px rgba(139, 92, 246, 0.4)',
-                  ]
-                  : undefined,
-              }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            >
-              {/* Inner wireframe effect */}
-              <div className="absolute inset-2 border border-white/20 rounded-xl" />
-              <div className="absolute inset-4 border border-white/10 rounded-lg" />
+            />
+          ))}
 
-              {/* Orchestrator Icon */}
-              <motion.span
-                className="text-4xl z-10"
-                animate={{
-                  scale: phase === 'complete' ? [1, 1.2, 1] : 1,
-                }}
-                transition={{ duration: 0.5 }}
+          {/* Core Shape */}
+          <motion.div
+            className="w-full h-full rounded-2xl bg-gradient-to-br from-primary via-indigo-600 to-purple-600 flex items-center justify-center shadow-[0_0_50px_rgba(79,70,229,0.5)] border border-white/20 relative overflow-hidden"
+            animate={{
+              rotate: phase === 'receiving' ? 180 : 45,
+              borderRadius: phase === 'synthesis' ? "50%" : "20%"
+            }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
+          >
+            {/* Inner Energy */}
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-t from-transparent via-white/10 to-transparent"
+              animate={{ y: [-100, 100] }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={phase}
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.5, opacity: 0 }}
+                className="text-4xl"
               >
                 {phase === 'complete' ? '✓' : '🧠'}
-              </motion.span>
-
-              {/* Particle effects inside orchestrator */}
-              {phase === 'synthesis' && (
-                <div className="absolute inset-0 overflow-hidden rounded-2xl">
-                  {[0, 1, 2].map((i) => (
-                    <motion.div
-                      key={i}
-                      className="absolute w-2 h-2 rounded-full"
-                      style={{
-                        background: agents[i].gradientFrom,
-                        left: '50%',
-                        top: '50%',
-                      }}
-                      animate={{
-                        x: [0, 20, -20, 10, -10, 0],
-                        y: [0, -10, 15, -20, 5, 0],
-                        scale: [0.5, 1, 0.8, 1.2, 0.6, 0.5],
-                        opacity: [0.8, 1, 0.8, 1, 0.8, 0.8],
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        delay: i * 0.3,
-                        ease: "easeInOut",
-                      }}
-                    />
-                  ))}
-                </div>
-              )}
-            </motion.div>
+              </motion.div>
+            </AnimatePresence>
           </motion.div>
+        </div>
 
-          {/* Agent Orbs */}
+        {/* Orbiting Agents */}
+        <div className="absolute inset-0 pointer-events-none">
           {agents.map((agent, index) => {
-            const angle = (index * 120 - 90) * (Math.PI / 180);
-            const radius = 100;
-            const x = Math.cos(angle) * radius;
-            const y = Math.sin(angle) * radius;
-            const isActive = index === currentAgent && progress < 75;
-            const hasCompleted = currentAgent > index || progress >= 75;
-            const isSending = phase === 'receiving' && index <= Math.floor((progress - 75) / 3.33);
+            const isActive = index === currentAgent && phase === 'agents';
+            const hasCompleted = index < currentAgent || phase !== 'agents';
+            const isSending = phase === 'receiving';
+
+            // Calculate orbit position
+            // We fake 3D orbit using elliptical math and scaling
+            const angleOffset = (index * (360 / agents.length));
 
             return (
               <motion.div
                 key={agent.name}
-                className="absolute top-1/2 left-1/2"
-                style={{
-                  x: x - 28,
-                  y: y - 28,
+                className="absolute top-1/2 left-1/2 w-16 h-16 -ml-8 -mt-8 flex items-center justify-center"
+                animate={phase === 'agents' ? {
+                  rotate: [angleOffset, angleOffset + 360],
+                  x: [Math.cos((angleOffset * Math.PI) / 180) * 120, Math.cos(((angleOffset + 360) * Math.PI) / 180) * 120],
+                  y: [Math.sin((angleOffset * Math.PI) / 180) * 40, Math.sin(((angleOffset + 360) * Math.PI) / 180) * 40], // Ellipse
+                  scale: [
+                    0.8 + 0.2 * Math.sin((angleOffset * Math.PI) / 180),
+                    0.8 + 0.2 * Math.sin(((angleOffset + 360) * Math.PI) / 180)
+                  ],
+                  zIndex: [
+                    Math.sin((angleOffset * Math.PI) / 180) > 0 ? 20 : 0,
+                    Math.sin(((angleOffset + 360) * Math.PI) / 180) > 0 ? 20 : 0
+                  ]
+                } : {
+                  // When not orbiting (e.g. synthesis), move to fixed positions
+                  rotate: 0,
+                  x: Math.cos(((index * 120 - 90) * Math.PI) / 180) * 120,
+                  y: Math.sin(((index * 120 - 90) * Math.PI) / 180) * 120,
+                  scale: 1,
+                  zIndex: 10
+                }}
+                transition={phase === 'agents' ? {
+                  duration: 10,
+                  repeat: Infinity,
+                  ease: "linear",
+                  times: [0, 1] // Ensure smooth loop
+                } : {
+                  duration: 0.8,
+                  ease: "easeInOut"
                 }}
               >
-                {/* Data flow line to orchestrator */}
-                <AnimatePresence>
-                  {(isActive || isSending) && (
-                    <svg
-                      className="absolute pointer-events-none"
-                      style={{
-                        width: radius,
-                        height: 4,
-                        left: 28,
-                        top: 26,
-                        transform: `rotate(${(index * 120 + 90)}deg)`,
-                        transformOrigin: '0 50%',
-                      }}
-                    >
-                      <defs>
-                        <linearGradient id={`flow-${index}`} x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor={agent.gradientFrom} stopOpacity="0.8" />
-                          <stop offset="50%" stopColor="white" stopOpacity="0.6" />
-                          <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.8" />
-                        </linearGradient>
-                      </defs>
-                      <motion.line
-                        x1="0"
-                        y1="2"
-                        x2={radius - 45}
-                        y2="2"
-                        stroke={`url(#flow-${index})`}
-                        strokeWidth="2"
-                        strokeDasharray="8 4"
-                        initial={{ strokeDashoffset: 40, opacity: 0 }}
-                        animate={{
-                          strokeDashoffset: [40, 0],
-                          opacity: 1,
-                        }}
-                        exit={{ opacity: 0 }}
-                        transition={{
-                          strokeDashoffset: { duration: 1, repeat: Infinity, ease: "linear" },
-                          opacity: { duration: 0.3 },
-                        }}
-                      />
-                    </svg>
-                  )}
-                </AnimatePresence>
-
-                {/* Data particles flowing to center */}
+                {/* Connecting Line to Center (only when sending) */}
                 {isSending && (
-                  <>
-                    {[0, 1, 2].map((pi) => (
-                      <motion.div
-                        key={pi}
-                        className="absolute w-2 h-2 rounded-full"
-                        style={{
-                          background: agent.gradientFrom,
-                          left: 24,
-                          top: 24,
-                        }}
-                        initial={{
-                          x: 0,
-                          y: 0,
-                          scale: 1,
-                          opacity: 1,
-                        }}
-                        animate={{
-                          x: -x + 12,
-                          y: -y + 12,
-                          scale: [1, 1.5, 0.5],
-                          opacity: [1, 1, 0],
-                        }}
-                        transition={{
-                          duration: 1,
-                          repeat: Infinity,
-                          delay: pi * 0.3,
-                          ease: "easeIn",
-                        }}
-                      />
-                    ))}
-                  </>
+                  <motion.div
+                    className="absolute top-1/2 left-1/2 h-[2px] bg-gradient-to-r from-transparent via-white w-0 origin-left"
+                    style={{
+                      width: 120,
+                      rotate: `${(Math.atan2(-Math.sin(((index * 120 - 90) * Math.PI) / 180), -Math.cos(((index * 120 - 90) * Math.PI) / 180)) * 180 / Math.PI)}deg`
+                    }}
+                    initial={{ opacity: 0, scaleX: 0 }}
+                    animate={{ opacity: 1, scaleX: 1 }}
+                    exit={{ opacity: 0 }}
+                  />
                 )}
 
-                {/* Agent Orb */}
-                <motion.div
-                  className={cn(
-                    "w-14 h-14 rounded-full flex items-center justify-center text-2xl relative",
-                    agent.color,
-                    isActive && agent.glowColor,
-                    hasCompleted && "opacity-60"
-                  )}
-                  animate={isActive ? {
-                    scale: [1, 1.15, 1],
-                  } : {}}
-                  transition={{ duration: 0.8, repeat: isActive ? Infinity : 0 }}
-                >
-                  {hasCompleted && !isActive ? (
-                    <span className="text-xl">✓</span>
-                  ) : (
-                    agent.icon
-                  )}
-
-                  {/* Pulse ring for active agent */}
+                <div className={cn(
+                  "w-12 h-12 rounded-full flex items-center justify-center text-xl shadow-lg border border-white/10 transition-all duration-300 relative",
+                  agent.color,
+                  isActive && `ring-4 ring-offset-2 ring-offset-black/50 ${agent.shadowColor} scale-110`,
+                  hasCompleted && !isActive && "opacity-80 scale-90 grayscale-[0.3]"
+                )}>
+                  {hasCompleted ? '✓' : agent.icon}
                   {isActive && (
                     <motion.div
-                      className="absolute inset-0 rounded-full border-2"
-                      style={{ borderColor: agent.gradientFrom }}
-                      initial={{ scale: 1, opacity: 0.8 }}
-                      animate={{ scale: 1.5, opacity: 0 }}
-                      transition={{ duration: 1, repeat: Infinity }}
+                      className="absolute inset-0 rounded-full border-2 border-white"
+                      animate={{ scale: [1, 1.5], opacity: [1, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
                     />
                   )}
-                </motion.div>
+                </div>
               </motion.div>
             );
           })}
-
-          {/* Connection lines between agents during synthesis */}
-          {phase === 'synthesis' && (
-            <svg className="absolute inset-0 pointer-events-none" viewBox="-144 -144 288 288">
-              {[0, 1, 2].map((i) => {
-                const nextI = (i + 1) % 3;
-                const angle1 = (i * 120 - 90) * (Math.PI / 180);
-                const angle2 = (nextI * 120 - 90) * (Math.PI / 180);
-                const r = 100;
-
-                return (
-                  <motion.line
-                    key={i}
-                    x1={Math.cos(angle1) * r}
-                    y1={Math.sin(angle1) * r}
-                    x2={Math.cos(angle2) * r}
-                    y2={Math.sin(angle2) * r}
-                    stroke="rgba(139, 92, 246, 0.3)"
-                    strokeWidth="1"
-                    strokeDasharray="4 4"
-                    initial={{ opacity: 0 }}
-                    animate={{
-                      opacity: [0.2, 0.5, 0.2],
-                      strokeDashoffset: [0, 8],
-                    }}
-                    transition={{
-                      opacity: { duration: 1, repeat: Infinity },
-                      strokeDashoffset: { duration: 1, repeat: Infinity, ease: "linear" },
-                    }}
-                  />
-                );
-              })}
-            </svg>
-          )}
         </div>
       </div>
 
-      {/* Status Text */}
+      {/* Status Text Area */}
       <motion.div
         key={message.main}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="text-center mb-6"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="text-center mb-8 relative z-20"
       >
-        <h3 className="text-xl font-semibold mb-1">{message.main}</h3>
-        <p className="text-muted-foreground text-sm">{message.sub}</p>
+        <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-white/70 mb-2">
+          {message.main}
+        </h3>
+        <p className="text-blue-200/60 font-medium tracking-wide text-sm">{message.sub}</p>
       </motion.div>
 
-      {/* Enhanced Progress Bar */}
-      <div className="w-80 mb-6">
-        {/* Phase indicators */}
-        <div className="flex justify-between text-[10px] text-muted-foreground mb-2">
-          <span className={cn(phase !== 'agents' && 'text-success')}>
-            {phase !== 'agents' ? '✓' : '⚡'} Agents
-          </span>
-          <span className={cn(
-            phase === 'receiving' && 'text-primary',
-            phase === 'synthesis' || phase === 'complete' ? 'text-success' : ''
-          )}>
-            {phase === 'synthesis' || phase === 'complete' ? '✓' : phase === 'receiving' ? '⚡' : '○'} Receiving
-          </span>
-          <span className={cn(
-            phase === 'synthesis' && 'text-primary',
-            phase === 'complete' && 'text-success'
-          )}>
-            {phase === 'complete' ? '✓' : phase === 'synthesis' ? '⚡' : '○'} Synthesis
-          </span>
-        </div>
+      {/* Advanced Scanner Progress Bar */}
+      <div className="w-full max-w-sm mb-8 relative group">
+        {/* Glow underlay */}
+        <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full opacity-20 blur-md group-hover:opacity-40 transition-opacity" />
 
-        {/* Progress bar */}
-        <div className="h-2 bg-secondary rounded-full overflow-hidden relative">
+        <div className="h-2 bg-gray-800 rounded-full overflow-hidden relative">
+          {/* Fill */}
           <motion.div
-            className="h-full rounded-full absolute inset-0"
-            style={{
-              background: phase === 'synthesis' || phase === 'complete'
-                ? 'linear-gradient(90deg, #3b82f6, #8b5cf6, #a855f7)'
-                : 'linear-gradient(90deg, #3b82f6, #6366f1)',
-            }}
+            className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.2, ease: "linear" }}
           />
-
-          {/* Shimmer effect */}
+          {/* Scanner Light */}
           <motion.div
-            className="absolute inset-0 opacity-30"
-            style={{
-              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)',
-            }}
-            animate={{ x: ['-100%', '100%'] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-0 bottom-0 w-24 bg-gradient-to-r from-transparent via-white/80 to-transparent blur-[2px]"
+            animate={{ x: ['-100%', '500%'] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
           />
         </div>
 
-        {/* Percentage */}
-        <div className="text-right mt-1">
-          <span className="text-xs font-mono text-muted-foreground">{Math.round(progress)}%</span>
+        <div className="flex justify-between mt-2 text-[10px] font-mono text-white/30 uppercase tracking-widest">
+          <span>Initialization</span>
+          <span>Synthesis</span>
+          <span>Completion</span>
         </div>
       </div>
 
-      {/* Timeline */}
-      <div className="flex items-center gap-2">
-        {agents.map((agent, index) => (
-          <div key={agent.name} className="flex items-center">
-            <motion.div
-              className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all duration-300",
-                index < currentAgent || progress >= 75 ? agent.color :
-                  index === currentAgent && progress < 75 ? `${agent.color} animate-pulse` :
-                    'bg-secondary'
-              )}
-            >
-              {index < currentAgent || progress >= 75 ? '✓' : agent.icon}
-            </motion.div>
-            {index < agents.length - 1 && (
-              <motion.div
-                className={cn(
-                  "w-8 h-0.5 mx-1 transition-colors duration-300",
-                  index < currentAgent || progress >= 75 ? 'bg-success' : 'bg-secondary'
-                )}
-              />
-            )}
-          </div>
-        ))}
-        <div className="flex items-center">
-          <motion.div className="w-8 h-0.5 mx-1 bg-secondary" />
+      {/* Bottom Pipeline Stages */}
+      <div className="flex items-center gap-4 relative z-20">
+        {/* Agents Step */}
+        <div className="flex items-center gap-2">
           <motion.div
             className={cn(
-              "w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-all duration-300",
-              progress >= 75
-                ? 'bg-gradient-to-br from-primary to-agent-trajectory shadow-lg shadow-primary/30'
-                : 'bg-secondary'
+              "w-8 h-8 rounded-lg flex items-center justify-center border transition-colors",
+              phase === 'agents' ? "border-primary bg-primary/20 text-blue-300" :
+                progress > 0 ? "border-primary/50 bg-primary/10 text-primary" : "border-white/10 text-white/20"
             )}
-            animate={progress >= 75 ? {
-              scale: [1, 1.1, 1],
-            } : {}}
-            transition={{ duration: 1, repeat: progress >= 75 && progress < 100 ? Infinity : 0 }}
+            animate={phase === 'agents' ? { boxShadow: "0 0 15px rgba(59, 130, 246, 0.5)" } : {}}
           >
-            {progress >= 100 ? '✓' : '🧠'}
+            ⚡
+          </motion.div>
+          <div className={cn("h-[2px] w-8 rounded-full", progress > 50 ? "bg-primary" : "bg-white/10")} />
+        </div>
+
+        {/* Synthesis Step */}
+        <div className="flex items-center gap-2">
+          <motion.div
+            className={cn(
+              "w-8 h-8 rounded-lg flex items-center justify-center border transition-colors",
+              phase === 'synthesis' ? "border-purple-500 bg-purple-500/20 text-purple-300" :
+                progress > 85 ? "border-purple-500/50 bg-purple-500/10 text-purple-500" : "border-white/10 text-white/20"
+            )}
+            animate={phase === 'synthesis' ? { boxShadow: "0 0 15px rgba(168, 85, 247, 0.5)" } : {}}
+          >
+            🔄
+          </motion.div>
+          <div className={cn("h-[2px] w-8 rounded-full", progress > 95 ? "bg-purple-500" : "bg-white/10")} />
+        </div>
+
+        {/* Completion Step */}
+        <div className="flex items-center gap-2">
+          <motion.div
+            className={cn(
+              "w-8 h-8 rounded-lg flex items-center justify-center border transition-colors",
+              phase === 'complete' ? "border-green-500 bg-green-500/20 text-green-300" : "border-white/10 text-white/20"
+            )}
+            animate={phase === 'complete' ? { scale: [1, 1.2, 1], boxShadow: "0 0 15px rgba(34, 197, 94, 0.5)" } : {}}
+          >
+            ✓
           </motion.div>
         </div>
       </div>
     </div>
   );
 };
+

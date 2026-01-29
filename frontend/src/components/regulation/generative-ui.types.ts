@@ -1,159 +1,117 @@
-/**
- * Generative UI Types and Transformation Layer
- * 
- * Converts API responses to typed UI intents for structured rendering.
- */
 
-import { ChatCitation, ChatResponse } from "@/lib/api";
+import { ChatResponse, ChatCitation } from "@/lib/api";
 
-// =============================================================================
-// UI INTENT TYPES
-// =============================================================================
+export type UIIntentType =
+    | "ANSWER_SUMMARY"
+    | "REGULATION_CARD"
+    | "CONFIDENCE_BANNER"
+    | "FOLLOW_UP_SUGGESTIONS";
 
-export type ConfidenceLevel = "LOW" | "MEDIUM" | "HIGH";
+// Base Intent Interface
+export interface UIIntent {
+    type: UIIntentType;
+}
 
-export interface AnswerSummaryIntent {
+// 1. Answer Summary Intent
+export interface AnswerSummaryIntent extends UIIntent {
     type: "ANSWER_SUMMARY";
     text: string;
     processingTimeMs: number;
     citationCount: number;
 }
 
-export interface RegulationCardIntent {
+// 2. Regulation Card Intent (for each citation)
+export interface RegulationCardIntent extends UIIntent {
     type: "REGULATION_CARD";
-    id: string;
     article: string;
-    excerpt: string;
     page: number;
-    confidence: ConfidenceLevel;
+    excerpt: string;
+    sourceUrl?: string; // Optional metadata
+    fullText?: string;  // Optional full text for drawer
 }
 
-export interface ConfidenceBannerIntent {
+// 3. Confidence Banner Intent
+export interface ConfidenceBannerIntent extends UIIntent {
     type: "CONFIDENCE_BANNER";
-    level: "LOW" | "MEDIUM";
+    level: "LOW" | "MEDIUM" | "HIGH";
     message: string;
 }
 
-export interface FollowUpIntent {
+// 4. Follow Up Suggestions Intent
+export interface FollowUpSuggestionsIntent extends UIIntent {
     type: "FOLLOW_UP_SUGGESTIONS";
     questions: string[];
 }
 
-export type UIIntent =
-    | AnswerSummaryIntent
-    | RegulationCardIntent
-    | ConfidenceBannerIntent
-    | FollowUpIntent;
+export type GenerativeUIResponse = UIIntent[];
 
-export interface GenerativeUIResponse {
-    intents: UIIntent[];
-    conversationId: string;
-    timestamp: Date;
-}
+// --- Transformation Logic ---
 
-// =============================================================================
-// TRANSFORMATION FUNCTION
-// =============================================================================
-
-/**
- * Transform a chat API response into UI intents for structured rendering.
- * 
- * The order of intents determines rendering order:
- * 1. Answer Summary Panel
- * 2. Confidence Banner (if LOW/MEDIUM)
- * 3. Regulation Cards (one per citation)
- * 4. Follow-up Question Chips
- */
-export function transformResponseToIntents(
-    response: ChatResponse
-): GenerativeUIResponse {
+export function transformResponseToIntents(response: ChatResponse): GenerativeUIResponse {
     const intents: UIIntent[] = [];
 
-    // 1. Answer Summary Intent
-    intents.push({
-        type: "ANSWER_SUMMARY",
-        text: response.answer,
-        processingTimeMs: response.processing_time_ms,
-        citationCount: response.citations?.length ?? 0,
-    });
+    // 1. Answer Summary
+    if (response.answer) {
+        intents.push({
+            type: "ANSWER_SUMMARY",
+            text: response.answer,
+            processingTimeMs: response.processing_time_ms,
+            citationCount: response.citations?.length || 0,
+        } as AnswerSummaryIntent);
+    }
 
-    // 2. Confidence Banner (only for LOW or MEDIUM)
+    // 2. Confidence Banner (only if LOW or MEDIUM)
     if (response.confidence === "LOW" || response.confidence === "MEDIUM") {
-        const message =
-            response.confidence === "LOW"
-                ? "⚠️ Réponse incertaine. Consultez un expert en conformité BCT."
-                : "⚡ Confiance modérée. Vérifiez les sources pour plus de précision.";
+        let message = "⚠️ Réponse incertaine. Veuillez vérifier avec le texte officiel.";
+        if (response.confidence === "LOW") {
+            message = "⚠️ Réponse incertaine. Consultez un expert en conformité BCT.";
+        } else if (response.confidence === "MEDIUM") {
+            message = "⚠️ Confiance moyenne. Basé sur les extraits disponibles.";
+        }
 
         intents.push({
             type: "CONFIDENCE_BANNER",
             level: response.confidence,
             message,
-        });
+        } as ConfidenceBannerIntent);
     }
 
-    // 3. Regulation Cards (one per citation)
+    // 3. Regulation Cards
     if (response.citations && response.citations.length > 0) {
-        response.citations.forEach((citation, index) => {
+        response.citations.forEach(cit => {
             intents.push({
                 type: "REGULATION_CARD",
-                id: `reg-${index}`,
-                article: citation.article || `Document - Page ${citation.page}`,
-                excerpt: citation.excerpt,
-                page: citation.page,
-                confidence: response.confidence,
-            });
+                article: cit.article,
+                page: cit.page,
+                excerpt: cit.excerpt,
+            } as RegulationCardIntent);
         });
     }
 
-    // 4. Follow-up Suggestions
+    // 4. Follow Up Suggestions
     if (response.follow_up_questions && response.follow_up_questions.length > 0) {
         intents.push({
             type: "FOLLOW_UP_SUGGESTIONS",
             questions: response.follow_up_questions,
-        });
+        } as FollowUpSuggestionsIntent);
     }
 
-    return {
-        intents,
-        conversationId: response.conversation_id,
-        timestamp: new Date(),
-    };
+    return intents;
 }
 
-// =============================================================================
-// HELPER FUNCTIONS
-// =============================================================================
-
-export function getIntentsByType<T extends UIIntent["type"]>(
-    response: GenerativeUIResponse,
-    type: T
-): Extract<UIIntent, { type: T }>[] {
-    return response.intents.filter((intent) => intent.type === type) as Extract<
-        UIIntent,
-        { type: T }
-    >[];
+// Helpers to extract specific intents for easier rendering
+export function getAnswerSummary(intents: GenerativeUIResponse): AnswerSummaryIntent | undefined {
+    return intents.find(i => i.type === "ANSWER_SUMMARY") as AnswerSummaryIntent;
 }
 
-export function getAnswerSummary(
-    response: GenerativeUIResponse
-): AnswerSummaryIntent | undefined {
-    return getIntentsByType(response, "ANSWER_SUMMARY")[0];
+export function getConfidenceBanner(intents: GenerativeUIResponse): ConfidenceBannerIntent | undefined {
+    return intents.find(i => i.type === "CONFIDENCE_BANNER") as ConfidenceBannerIntent;
 }
 
-export function getConfidenceBanner(
-    response: GenerativeUIResponse
-): ConfidenceBannerIntent | undefined {
-    return getIntentsByType(response, "CONFIDENCE_BANNER")[0];
+export function getRegulationCards(intents: GenerativeUIResponse): RegulationCardIntent[] {
+    return intents.filter(i => i.type === "REGULATION_CARD") as RegulationCardIntent[];
 }
 
-export function getRegulationCards(
-    response: GenerativeUIResponse
-): RegulationCardIntent[] {
-    return getIntentsByType(response, "REGULATION_CARD");
-}
-
-export function getFollowUpSuggestions(
-    response: GenerativeUIResponse
-): FollowUpIntent | undefined {
-    return getIntentsByType(response, "FOLLOW_UP_SUGGESTIONS")[0];
+export function getFollowUpSuggestions(intents: GenerativeUIResponse): FollowUpSuggestionsIntent | undefined {
+    return intents.find(i => i.type === "FOLLOW_UP_SUGGESTIONS") as FollowUpSuggestionsIntent;
 }

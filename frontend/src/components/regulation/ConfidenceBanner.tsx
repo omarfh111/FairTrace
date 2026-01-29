@@ -1,24 +1,15 @@
-/**
- * ConfidenceBanner - Warning Banner for LOW/MEDIUM Confidence
- * 
- * Only renders when confidence is not HIGH.
- */
 
 import { ConfidenceBannerIntent } from "./generative-ui.types";
-import { AlertTriangle, AlertCircle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
-interface ConfidenceBannerProps {
+interface Props {
     intent: ConfidenceBannerIntent;
 }
 
-export function ConfidenceBanner({ intent }: ConfidenceBannerProps) {
+export function ConfidenceBanner({ intent }: Props) {
     return (
-        <div className={`reg-confidence-banner ${intent.level.toLowerCase()}`}>
-            {intent.level === "LOW" ? (
-                <AlertCircle size={18} />
-            ) : (
-                <AlertTriangle size={18} />
-            )}
+        <div className={`confidence-banner ${intent.level}`}>
+            <AlertTriangle size={18} />
             <span>{intent.message}</span>
         </div>
     );
