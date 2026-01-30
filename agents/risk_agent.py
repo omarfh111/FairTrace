@@ -118,7 +118,7 @@ Be thorough but fair. Your job is to find risk, not to reject everyone."""
             collection=collection,
             query_text=query,
             outcome=default_outcomes.get(collection, "DEFAULT"),
-            limit=5,
+            limit=30,
             dense_vector=dense_vector,
             sparse_indices=sparse_indices,
             sparse_values=sparse_values,
@@ -130,7 +130,7 @@ Be thorough but fair. Your job is to find risk, not to reject everyone."""
         narrative_response = search_by_narrative(
             collection=collection,
             query_text="problems failures lawsuits bankruptcy default missed payments distress",
-            limit=5,
+            limit=30,
             filters=filters
         )
         narrative_results = narrative_response.get("results", [])
@@ -138,7 +138,7 @@ Be thorough but fair. Your job is to find risk, not to reject everyone."""
         # Combine and deduplicate
         all_evidence = defaults + [r for r in narrative_results if r["id"] not in [d["id"] for d in defaults]]
         
-        return all_evidence[:10]
+        return all_evidence[:30]
     
     def analyze(self, application: dict, evidence: list[dict]) -> dict:
         """Analyze the application and evidence to produce a verdict."""
@@ -173,7 +173,7 @@ Based on the evidence, provide your risk assessment as JSON."""}
             # RRF scores are typically 0.01-0.1, we'll scale to show 60%-95% similarity
             # Higher RRF score = more relevant = higher similarity
             verdict["evidence"] = []
-            for idx, e in enumerate(evidence[:5]):
+            for idx, e in enumerate(evidence[:10]):
                 raw_score = e.get("score", 0)
                 # Scale RRF score: assume typical range 0.01-0.1, map to 60%-95%
                 # First result gets highest score, gradually decrease for ranking effect

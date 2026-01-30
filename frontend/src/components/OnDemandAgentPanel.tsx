@@ -25,7 +25,8 @@ import {
     AlertCircle,
     CheckCircle,
     Target,
-    Rocket
+    Rocket,
+    Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -354,11 +355,21 @@ export const OnDemandAgentPanel = ({ decisionId }: OnDemandAgentPanelProps) => {
             transition={{ delay: 0.3, duration: 0.4 }}
         >
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Rocket className="w-5 h-5 text-primary" />
+                <motion.div
+                    animate={{ rotate: [0, 10, -10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                >
+                    <Rocket className="w-5 h-5 text-primary" />
+                </motion.div>
                 <span>On-Demand Insights</span>
-                <span className="text-xs text-muted-foreground font-normal">
-                    (Click to explore)
-                </span>
+                <motion.span
+                    className="text-xs text-muted-foreground font-normal flex items-center gap-1"
+                    animate={{ opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                >
+                    <Sparkles className="w-3 h-3" />
+                    Click to explore
+                </motion.span>
             </h2>
 
             <div className="space-y-3">
@@ -366,20 +377,32 @@ export const OnDemandAgentPanel = ({ decisionId }: OnDemandAgentPanelProps) => {
                     <GlassCard key={agent.id} className="overflow-hidden" hover={false}>
                         <button
                             onClick={() => handleAgentClick(agent.id)}
-                            className="w-full p-4 flex items-center justify-between hover:bg-secondary/30 transition-colors"
+                            className="w-full p-4 flex items-center justify-between hover:bg-secondary/30 transition-all duration-200 group"
                         >
                             <div className="flex items-center gap-3">
-                                <div className={cn(
-                                    "w-10 h-10 rounded-lg bg-gradient-to-br flex items-center justify-center text-white",
-                                    agent.color
-                                )}>
+                                <motion.div
+                                    className={cn(
+                                        "w-10 h-10 rounded-lg bg-gradient-to-br flex items-center justify-center text-white shadow-lg transition-shadow duration-200",
+                                        agent.color,
+                                        expandedAgent === agent.id && "shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+                                    )}
+                                    whileHover={{ scale: 1.05, y: -2 }}
+                                    animate={expandedAgent === agent.id ? { scale: [1, 1.05, 1] } : {}}
+                                    transition={{ duration: 0.3 }}
+                                >
                                     {agent.icon}
-                                </div>
+                                </motion.div>
                                 <div className="text-left">
                                     <h3 className="font-medium flex items-center gap-2">
                                         {agent.name}
                                         {hasData(agent.id) && (
-                                            <CheckCircle className="w-4 h-4 text-success" />
+                                            <motion.div
+                                                initial={{ scale: 0 }}
+                                                animate={{ scale: 1 }}
+                                                transition={{ type: "spring" }}
+                                            >
+                                                <CheckCircle className="w-4 h-4 text-success" />
+                                            </motion.div>
                                         )}
                                     </h3>
                                     <p className="text-xs text-muted-foreground">{agent.description}</p>
@@ -387,13 +410,19 @@ export const OnDemandAgentPanel = ({ decisionId }: OnDemandAgentPanelProps) => {
                             </div>
                             <div className="flex items-center gap-2">
                                 {loadingAgent === agent.id && (
-                                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                                    <motion.div
+                                        animate={{ rotate: 360 }}
+                                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                    >
+                                        <Loader2 className="w-4 h-4 text-primary" />
+                                    </motion.div>
                                 )}
-                                {expandedAgent === agent.id ? (
-                                    <ChevronUp className="w-5 h-5 text-muted-foreground" />
-                                ) : (
-                                    <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                                )}
+                                <motion.div
+                                    animate={{ rotate: expandedAgent === agent.id ? 180 : 0 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    <ChevronDown className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                                </motion.div>
                             </div>
                         </button>
 

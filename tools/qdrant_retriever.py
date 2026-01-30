@@ -322,7 +322,7 @@ def search_by_keywords(
 def hybrid_search(
     collection: str,
     query_text: str,
-    limit: int = 10,
+    limit: int = 30,
     filters: dict | None = None,
     weights: dict[str, float] | None = None,
     dense_vector: list[float] | None = None,

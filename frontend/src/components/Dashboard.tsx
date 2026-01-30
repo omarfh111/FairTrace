@@ -14,6 +14,7 @@ import { Application, DecisionResult, AgentVerdict } from "@/types/application";
 import { submitDecision, ApiDecisionResponse, checkHealth } from "@/lib/api";
 import { ArrowLeft, Zap, Wifi, WifiOff } from "lucide-react";
 import { useEffect } from "react";
+import { StarFieldBackground } from "@/components/orbital";
 
 type ViewState = 'form' | 'loading' | 'result';
 
@@ -41,7 +42,7 @@ const transformApiResponse = (api: ApiDecisionResponse): DecisionResult => {
       concerns: verdict.key_concerns || [],
       mitigatingFactors: verdict.mitigating_factors || [],
       confidence: verdict.confidence === 'HIGH' ? 90 : verdict.confidence === 'MEDIUM' ? 70 : 50,
-      similarCases: (verdict.evidence || []).slice(0, 3).map(e => ({
+      similarCases: (verdict.evidence || []).slice(0, 10).map(e => ({
         entityId: e.entity_id,
         outcome: e.outcome as any,
         similarity: Math.round((e.similarity_score || 0) * 100),
@@ -137,9 +138,12 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      {/* Animated space background */}
+      <StarFieldBackground />
+
       {/* Header */}
-      <header className="border-b border-glass-border bg-card/30 backdrop-blur-xl sticky top-0 z-50">
+      <header className="border-b border-glass-border bg-card/30 backdrop-blur-xl sticky top-0 z-50 relative">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">

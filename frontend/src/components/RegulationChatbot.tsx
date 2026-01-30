@@ -21,6 +21,7 @@ import {
 import './RegulationChatbot.css';
 import { RegulationResponse } from './regulation/RegulationResponse';
 import { StreamingAnswer } from './regulation/StreamingAnswer';
+import { RegulationIcon } from './ui/RegulationIcon';
 
 // --- Icons ---
 const BookIcon = () => (
@@ -267,7 +268,7 @@ export function RegulationChatbot() {
                 title="Agent Réglementation Bancaire"
             >
                 <div className="toggle-icon">
-                    <BookIcon />
+                    <RegulationIcon size={24} />
                 </div>
                 <span className="toggle-label font-medium">Agent Réglementation</span>
                 <div className="toggle-pulse" />

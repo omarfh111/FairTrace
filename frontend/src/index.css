@@ -120,12 +120,10 @@
   }
 
   .shimmer {
-    background: linear-gradient(
-      90deg,
-      hsl(240 12% 8%) 0%,
-      hsl(240 12% 14%) 50%,
-      hsl(240 12% 8%) 100%
-    );
+    background: linear-gradient(90deg,
+        hsl(240 12% 8%) 0%,
+        hsl(240 12% 14%) 50%,
+        hsl(240 12% 8%) 100%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
   }
@@ -138,10 +136,13 @@
 }
 
 @keyframes agent-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
+
   50% {
     opacity: 0.7;
     transform: scale(1.05);
@@ -152,16 +153,199 @@
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }
 }
 
 @keyframes glow-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 20px hsl(var(--primary) / 0.2);
   }
+
   50% {
     box-shadow: 0 0 40px hsl(var(--primary) / 0.4);
   }
+}
+
+/* Orbital Theme Animations */
+@keyframes orbital-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbital-rotate-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes aurora-shift {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+    filter: hue-rotate(0deg);
+  }
+
+  50% {
+    background-position: 100% 50%;
+    filter: hue-rotate(15deg);
+  }
+}
+
+@keyframes energy-flow {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(200%);
+    opacity: 0;
+  }
+}
+
+@keyframes particle-float {
+
+  0%,
+  100% {
+    transform: translateY(0) translateX(0);
+    opacity: 0.6;
+  }
+
+  25% {
+    transform: translateY(-10px) translateX(5px);
+    opacity: 1;
+  }
+
+  50% {
+    transform: translateY(-5px) translateX(-5px);
+    opacity: 0.8;
+  }
+
+  75% {
+    transform: translateY(-15px) translateX(3px);
+    opacity: 1;
+  }
+}
+
+@keyframes twinkle {
+
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes beacon-pulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px hsl(var(--escalate) / 0.3);
+    opacity: 0.8;
+  }
+
+  50% {
+    box-shadow: 0 0 40px hsl(var(--escalate) / 0.6);
+    opacity: 1;
+  }
+}
+
+@keyframes border-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+/* Orbital Utility Classes */
+.orbital-ring {
+  animation: orbital-rotate 20s linear infinite;
+}
+
+.orbital-ring-reverse {
+  animation: orbital-rotate-reverse 15s linear infinite;
+}
+
+.aurora-bg {
+  background-size: 200% 200%;
+  animation: aurora-shift 8s ease-in-out infinite;
+}
+
+.energy-flow {
+  animation: energy-flow 2s ease-in-out infinite;
+}
+
+.particle-float {
+  animation: particle-float 4s ease-in-out infinite;
+}
+
+.twinkle {
+  animation: twinkle 2s ease-in-out infinite;
+}
+
+.beacon-pulse {
+  animation: beacon-pulse 2s ease-in-out infinite;
+}
+
+.border-shimmer {
+  background-size: 200% 100%;
+  animation: border-shimmer 3s linear infinite;
+}
+
+/* Space Background Utilities */
+.space-gradient {
+  background: linear-gradient(135deg, #0A0E27 0%, #1A1F3A 50%, #0A0E27 100%);
+}
+
+/* Agent Glow Effects */
+.glow-risk {
+  box-shadow: 0 0 20px hsl(var(--agent-risk) / 0.4), 0 0 40px hsl(var(--agent-risk) / 0.2);
+}
+
+.glow-fairness {
+  box-shadow: 0 0 20px hsl(var(--agent-fairness) / 0.4), 0 0 40px hsl(var(--agent-fairness) / 0.2);
+}
+
+.glow-trajectory {
+  box-shadow: 0 0 20px hsl(var(--agent-trajectory) / 0.4), 0 0 40px hsl(var(--agent-trajectory) / 0.2);
+}
+
+/* Decision Aura Classes */
+.aura-approved {
+  background: radial-gradient(ellipse at center, hsl(var(--success) / 0.15) 0%, transparent 70%);
+}
+
+.aura-rejected {
+  background: radial-gradient(ellipse at center, hsl(var(--destructive) / 0.15) 0%, transparent 70%);
+}
+
+.aura-escalated {
+  background: radial-gradient(ellipse at center, hsl(var(--escalate) / 0.15) 0%, transparent 70%);
 }

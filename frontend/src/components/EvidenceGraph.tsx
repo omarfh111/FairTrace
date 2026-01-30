@@ -14,8 +14,9 @@ import {
 } from "recharts";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { cn } from "@/lib/utils";
-import { TrendingUp, Target, AlertCircle, CheckCircle, XCircle, Scale, Database } from "lucide-react";
+import { TrendingUp, Target, AlertCircle, CheckCircle, XCircle, Scale, Database, Sparkles } from "lucide-react";
 import { AgentVerdict, SimilarCase } from "@/types/application";
+import { AnimatedCounter } from "@/components/orbital";
 
 interface EvidenceDataPoint {
   id: string;
@@ -251,8 +252,15 @@ export const EvidenceGraph = ({ agents }: EvidenceGraphProps) => {
 
   if (evidencePoints.length === 0) {
     return (
-      <GlassCard className="p-6">
-        <div className="flex flex-col items-center justify-center py-12 text-center">
+      <GlassCard className="p-6 relative overflow-hidden">
+        {/* Space background decoration */}
+        <div className="absolute inset-0 space-gradient opacity-50" />
+        <div className="flex flex-col items-center justify-center py-12 text-center relative z-10">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            className="absolute w-32 h-32 border border-primary/10 rounded-full"
+          />
           <Database className="w-12 h-12 text-muted-foreground mb-4" />
           <h3 className="text-lg font-semibold mb-2">No Evidence Retrieved</h3>
           <p className="text-sm text-muted-foreground max-w-md">
@@ -304,22 +312,58 @@ export const EvidenceGraph = ({ agents }: EvidenceGraphProps) => {
 
         {/* Stats Row */}
         <div className="grid grid-cols-4 gap-3">
-          <div className="text-center p-2 bg-muted/20 rounded-lg">
-            <p className="text-xl font-bold text-foreground">{stats.total}</p>
-            <p className="text-[10px] text-muted-foreground">Total Evidence</p>
-          </div>
-          <div className="text-center p-2 bg-muted/20 rounded-lg">
-            <p className="text-xl font-bold text-agent-risk">{stats.byAgent.risk}</p>
-            <p className="text-[10px] text-muted-foreground">Risk Agent</p>
-          </div>
-          <div className="text-center p-2 bg-muted/20 rounded-lg">
-            <p className="text-xl font-bold text-agent-fairness">{stats.byAgent.fairness}</p>
-            <p className="text-[10px] text-muted-foreground">Fairness Agent</p>
-          </div>
-          <div className="text-center p-2 bg-muted/20 rounded-lg">
-            <p className="text-xl font-bold text-agent-trajectory">{stats.byAgent.trajectory}</p>
-            <p className="text-[10px] text-muted-foreground">Trajectory Agent</p>
-          </div>
+          <motion.div
+            className="text-center p-3 bg-gradient-to-b from-primary/10 to-transparent rounded-lg border border-primary/20"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <AnimatedCounter
+              value={stats.total}
+              className="text-xl font-bold text-foreground block"
+              duration={1}
+            />
+            <p className="text-[10px] text-muted-foreground mt-1">Total Evidence</p>
+          </motion.div>
+          <motion.div
+            className="text-center p-3 bg-gradient-to-b from-agent-risk/10 to-transparent rounded-lg border border-agent-risk/20"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <AnimatedCounter
+              value={stats.byAgent.risk}
+              className="text-xl font-bold text-agent-risk block"
+              duration={1}
+            />
+            <p className="text-[10px] text-muted-foreground mt-1">Risk Agent</p>
+          </motion.div>
+          <motion.div
+            className="text-center p-3 bg-gradient-to-b from-agent-fairness/10 to-transparent rounded-lg border border-agent-fairness/20"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <AnimatedCounter
+              value={stats.byAgent.fairness}
+              className="text-xl font-bold text-agent-fairness block"
+              duration={1}
+            />
+            <p className="text-[10px] text-muted-foreground mt-1">Fairness Agent</p>
+          </motion.div>
+          <motion.div
+            className="text-center p-3 bg-gradient-to-b from-agent-trajectory/10 to-transparent rounded-lg border border-agent-trajectory/20"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <AnimatedCounter
+              value={stats.byAgent.trajectory}
+              className="text-xl font-bold text-agent-trajectory block"
+              duration={1}
+            />
+            <p className="text-[10px] text-muted-foreground mt-1">Trajectory Agent</p>
+          </motion.div>
         </div>
 
         {/* Outcome Filter */}

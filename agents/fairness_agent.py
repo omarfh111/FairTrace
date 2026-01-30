@@ -113,7 +113,7 @@ Be balanced. Your job is to ensure fairness, not to approve everyone."""
             collection=collection,
             query_text=query,
             outcome="APPROVED",
-            limit=5,
+            limit=30,
             dense_vector=dense_vector,
             sparse_indices=sparse_indices,
             sparse_values=sparse_values,
@@ -125,7 +125,7 @@ Be balanced. Your job is to ensure fairness, not to approve everyone."""
         similar_response = hybrid_search(
             collection=collection,
             query_text=query,
-            limit=5,
+            limit=30,
             weights={"structured": 0.5, "narrative": 0.3, "keywords": 0.2},
             dense_vector=dense_vector,
             sparse_indices=sparse_indices,
@@ -137,7 +137,7 @@ Be balanced. Your job is to ensure fairness, not to approve everyone."""
         # Combine and deduplicate
         all_evidence = approvals + [r for r in similar_results if r["id"] not in [a["id"] for a in approvals]]
         
-        return all_evidence[:10]
+        return all_evidence[:30]
     
     def analyze(self, application: dict, evidence: list[dict]) -> dict:
         """Analyze the application for fair treatment."""
@@ -171,7 +171,7 @@ Based on the evidence, provide your fairness assessment as JSON."""}
             # Use raw RRF scores - scale to reasonable similarity range
             # RRF scores are typically 0.01-0.1, we'll scale to show 60%-95% similarity
             verdict["evidence"] = []
-            for idx, e in enumerate(evidence[:5]):
+            for idx, e in enumerate(evidence[:10]):
                 raw_score = e.get("score", 0)
                 base_similarity = min(0.95, max(0.60, 0.70 + raw_score * 3))
                 position_bonus = (5 - idx) * 0.02
