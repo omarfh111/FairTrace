@@ -7,7 +7,9 @@
 
 > **Production-grade, explainable AI credit decisioning with multi-agent orchestration, hybrid vector search, and real-time observability.**
 
-![FairTrace Dashboard](docs/images/dashboard.png)
+![FairTrace Dashboard](frontend/public/logo1.png)
+
+[![Watch Demo](https://img.shields.io/badge/🎬_Watch_Demo-Google_Drive-4285F4?style=for-the-badge&logo=googledrive&logoColor=white)](https://drive.google.com/file/d/1_IZea_rP1DtKrmQ3HBRDc8MRBLyTdxMi/view?usp=sharing)
 
 ---
 
